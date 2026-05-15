@@ -295,9 +295,19 @@ Spec 文件是你与编排系统的**唯一输入**。Agent 的所有决策依�
 | `/agentflow:spec [想法\|路径]` | `/agentflow:spec [想法\|路径]` | **写需求**：交互式构建或审阅改进 spec | feature-spec.md |
 | `/agentflow:plan <spec>` | `/agentflow:plan <spec>` | **仅规划**：只做架构和计划 | architecture.md + implementation-plan.md |
 | `/agentflow:build <plan>` | `/agentflow:build <plan>` | **仅实现**：从已有计划编码 | 代码变更 |
+| `/agentflow:mod [描述\|--full]` | `/agentflow:mod [描述\|--full]` | **轻量修改**：澄清 → 实现 → 门禁 | 代码变更（--full 含文档） |
 | `/agentflow:review` | `/agentflow:review` | **仅评审**：对当前变更运行门禁 | 评审报告 |
 
-### 4.2 典型使用流程
+### 4.2 命令选择指南
+
+| 场景 | 命令 |
+|------|------|
+| 全新功能，从零开始 | `/agentflow` |
+| 功能迭代，范围较大 | `/agentflow:plan` → `/agentflow:build` |
+| Bug 修复、小改动、字段调整 | `/agentflow:mod "描述"` |
+| 代码已写好，只要门禁 | `/agentflow:review` |
+
+### 4.3 典型使用流程
 
 ```bash
 # 步骤 1：编写 spec（或用 /agentflow:spec 交互式构建）
@@ -312,7 +322,7 @@ vim specs/user-auth/feature-spec.md
 # → 确认后启动流水线
 
 # 方式 B：显式指定路径
-/agentflow:specs/user-auth/feature-spec.md
+/agentflow specs/user-auth/feature-spec.md
 
 # 此时编排器自动执行：
 # → Phase 0: 初始化（创建目录、解析变量）
@@ -331,24 +341,24 @@ git add .
 git commit -m "feat: add user authentication"
 ```
 
-### 4.3 分步执行（更多控制）
-
-如果你希望在每个阶段审查后再继续：
+### 4.4 分步执行（更多控制）
 
 ```bash
 # 只做规划
 /agentflow:plan specs/user-auth/feature-spec.md
-# → 产出 specs/user-auth/architecture.md
-# → 产出 specs/user-auth/implementation-plan.md
-# → 你审查架构和计划，修改后继续
+
+# 轻量修改 — 小改动不需 spec 和 plan
+/agentflow:mod "修复导出 CSV 的日期格式为 yyyy-MM-dd"
+# → 追问澄清 → 实现 → 门禁 → 完成
+
+# 轻量修改含文档 — 改动稍大时
+/agentflow:mod --full "重构基金净值获取逻辑"
 
 # 从已审查的计划开始实现
 /agentflow:build specs/user-auth/implementation-plan.md
-# → 按计划实现代码
 
 # 运行完整评审
 /agentflow:review
-# → 运行 lint + typecheck + test + AI 评审
 ```
 
 ---
@@ -692,7 +702,7 @@ git checkout main
 git pull
 
 # 2. 在 Claude Code / Codex 中触发 agentFlow
-/agentflow:specs/user-auth/feature-spec.md
+/agentflow specs/user-auth/feature-spec.md
 
 # 3. 完成后审查变更
 git diff                    # 看所有代码变更
@@ -771,7 +781,7 @@ mkdir -p specs/export-feature
 **步骤 2：触发 agentFlow**
 
 ```
-/agentflow:specs/export-feature/feature-spec.md
+/agentflow specs/export-feature/feature-spec.md
 ```
 
 **步骤 3：编排器执行**
@@ -819,14 +829,14 @@ git push -u origin feature/export
 
 ### 11.1 编排器不响应触发器
 
-**症状**：发送 `/agentflow:specs/...` 后编排器直接回答了问题而不是启动流水线。
+**症状**：发送 `/agentflow specs/...` 后编排器直接回答了问题而不是启动流水线。
 
 **原因**：CLAUDE.md / AGENTS.md 未加载，或触发器未被识别。
 
 **解决**：
 - 确认 `CLAUDE.md`（Claude Code）在 `.claude/agentflows/` 中，或 `AGENTS.md`（Codex）在 `.codex/agentflows/` 中
 - 重新启动编码工具，确保加载了项目级指令
-- 试试显式触发：`/agentflow:specs/...`
+- 试试显式触发：`/agentflow specs/...`
 
 ### 11.2 Agent 启动失败
 
@@ -940,8 +950,9 @@ agents:
 | 操作 | Claude Code | Codex |
 |------|------------|-------|
 | 全流程（无参） | `/agentflow` | `/agentflow` |
-| 全流程（指定） | `/agentflow:specs/x/feature-spec.md` | `/agentflow:specs/x/feature-spec.md` |
+| 全流程（指定） | `/agentflow specs/x/feature-spec.md` | `/agentflow specs/x/feature-spec.md` |
 | 写需求 | `/agentflow:spec [想法\|路径]` | `/agentflow:spec [想法\|路径]` |
+| 轻量修改 | `/agentflow:mod [描述\|--full]` | `/agentflow:mod [描述\|--full]` |
 | 仅规划 | `/agentflow:plan specs/x/feature-spec.md` | `/agentflow:plan specs/x/feature-spec.md` |
 | 从计划实现 | `/agentflow:build specs/x/implementation-plan.md` | `/agentflow:build specs/x/implementation-plan.md` |
 | 仅评审 | `/agentflow:review` | `/agentflow:review` |
