@@ -1,4 +1,4 @@
-# agentFlow Platform Adapter — Claude Code
+# agentFlow Platform Adapter - Claude Code
 
 Protocol version: `1.0.0`
 
@@ -12,7 +12,7 @@ This adapter defines only Claude-specific behavior:
 - Agent tool launch and resume rules
 - concrete agent prompt locations
 - runtime file locations
-- Claude-specific permission/config notes
+- Claude-specific permission and config notes
 
 Everything else is defined in the core spec.
 
@@ -28,6 +28,8 @@ Everything else is defined in the core spec.
 | `REVIEW_DIR` | `.claude/agentflows/specs/{feature}/_agent/review-reports/` |
 | `DASHBOARD_URL` | `file://.claude/agentflows/tools/harness-dashboard.html` |
 
+Human-readable helper files MAY exist beside the canonical JSON files, but JSON remains authoritative.
+
 ## 3. Claude Runtime Files
 
 Persistent adapter files:
@@ -40,9 +42,12 @@ Persistent adapter files:
 Per-run files:
 
 - `.claude/agentflows/_run/{feature}/events.jsonl`
-- `.claude/agentflows/_run/{feature}/run-log.md`
+- `.claude/agentflows/_run/{feature}/run-log.json`
+- `.claude/agentflows/specs/{feature}/_agent/plan-bundle.json`
+- `.claude/agentflows/specs/{feature}/_agent/mod-bundle.json`
+- `.claude/agentflows/specs/{feature}/progress-log.json`
 - `.claude/agentflows/specs/{feature}/_agent/review-reports/taskXX-review.json`
-- optional `.md` mirrors for review readability
+- optional Markdown mirrors such as `architecture.md`, `implementation-plan.md`, `progress-log.md`, `run-log.md`, and `taskXX-review.md`
 
 ## 4. Agent Prompts
 
@@ -70,19 +75,21 @@ If Claude does not return an agent ID, the orchestrator MUST halt the active tas
 
 ## 6. Claude Configuration Rules
 
-- `.claude/agentflows/settings.json` defines the allowlist needed for planner/builder/evaluator shell access.
-- Local machine overrides belong in local Claude config, not in the template repository.
-- The template MUST NOT commit `.claude/settings.local.json` or equivalent per-user files.
+- `.claude/agentflows/settings.json` defines the allowlist needed for planner, builder, and evaluator shell access
+- local machine overrides belong in local Claude config, not in the template repository
+- the template MUST NOT commit `.claude/settings.local.json` or equivalent per-user files
 
-## 7. Review Contract
+## 7. Artifact Contract
 
-Claude evaluators MUST write canonical JSON reports using the review report schema:
+Canonical artifacts:
 
-- `task01-review.json`
-- `task02-review.json`
-- `task03-review.json`
+- planner output: `_agent/plan-bundle.json`
+- mod output: `_agent/mod-bundle.json`
+- progress tracking: `progress-log.json`
+- runtime tracking: `run-log.json`
+- evaluator output: `taskXX-review.json`
 
-Optional Markdown mirrors MAY be written for human reading. If both exist, the JSON file is authoritative.
+Optional Markdown mirrors MAY exist for human reading, but MUST NOT override the JSON artifacts.
 
 ## 8. Recovery Contract
 
@@ -91,6 +98,7 @@ Recovery decisions MUST be based on:
 1. `.claude/agentflows/state.json`
 2. the latest `events.jsonl`
 3. the latest task review JSON
+4. `progress-log.json` and `run-log.json` when present
 
 Human-readable Markdown MAY help operators, but MUST NOT be the recovery source of truth.
 

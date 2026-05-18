@@ -2,7 +2,7 @@
 
 ## Description
 
-Analyze a feature specification and produce an architecture design, implementation plan, and design contract. This skill activates the Feature Planner role from the agentFlow pipeline.
+Analyze a feature specification and produce a schema-backed planning bundle. This skill activates the Feature Planner role from the agentFlow pipeline.
 
 ## When to Use
 
@@ -18,27 +18,41 @@ Read the feature spec file at the path provided. Understand what is being asked,
 
 ### 2. Explore the Codebase
 
-Read relevant existing files near the change area. Note existing patterns (naming, structure, error handling, testing). Identify integration points.
+Read relevant existing files near the change area. Note existing patterns such as naming, structure, error handling, and testing. Identify integration points.
 
-### 3. Design Architecture
+### 3. Write the Canonical Plan Bundle
 
-Write `{OUTPUT_DIR}/architecture.md` with component/module diagram, data flow, key technical decisions with justification, risks and tradeoffs, and integration points.
+Write `{OUTPUT_DIR}/_agent/plan-bundle.json` as the authoritative planning artifact.
 
-### 4. Plan Implementation
+This file MUST conform to `protocol/schemas/plan-bundle.schema.json`.
 
-Write `{OUTPUT_DIR}/implementation-plan.md` with ordered steps in dependency order, per-step file path, change type, scope, dependencies, and complexity.
+### 4. Optional Mirrors
 
-### 5. Write Design Contract
+If helpful for human review, also write:
 
-Write `{OUTPUT_DIR}/_agent/design-contract.md` with verifiable acceptance criteria, explicit exclusions, and stated assumptions.
+- `{OUTPUT_DIR}/architecture.md`
+- `{OUTPUT_DIR}/implementation-plan.md`
+- `{OUTPUT_DIR}/_agent/design-contract.md`
+
+These are mirrors only. The JSON bundle is the source of truth.
+
+### 5. Bundle Requirements
+
+Ensure the bundle includes:
+
+- architecture with components, data flow, risks, and technical decisions
+- ordered implementation steps with stable IDs like `STEP-001`
+- per-step file path, change type, scope, dependencies, and complexity
+- design contract with acceptance criteria, explicit exclusions, and assumptions
 
 ### 6. Report
 
-Return to the orchestrator: paths of the three output files, a 3-sentence summary, and confidence level.
+Return to the orchestrator: the canonical bundle path, any mirror paths, a 3-sentence summary, and confidence level.
 
 ## Guardrails
 
 - Do NOT write implementation code
 - Do NOT infer requirements not in the spec
 - Do NOT propose changes without explaining why
-- Do NOT skip the "explicit exclusions" section in the contract
+- Do NOT omit the explicit exclusions section
+- Do NOT treat Markdown mirrors as authoritative

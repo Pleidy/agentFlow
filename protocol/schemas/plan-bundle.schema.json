@@ -1,0 +1,89 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://agentflow.local/protocol/schemas/plan-bundle.schema.json",
+  "title": "agentFlow plan bundle",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "protocol_version",
+    "feature",
+    "architecture",
+    "implementation_plan",
+    "design_contract"
+  ],
+  "properties": {
+    "protocol_version": { "type": "string" },
+    "feature": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "spec_file"],
+      "properties": {
+        "name": { "type": "string" },
+        "spec_file": { "type": "string" }
+      }
+    },
+    "architecture": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["summary", "components", "data_flows", "technical_decisions", "risks"],
+      "properties": {
+        "summary": { "type": "string" },
+        "components": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["name", "responsibility"],
+            "properties": {
+              "name": { "type": "string" },
+              "responsibility": { "type": "string" },
+              "files": { "type": "array", "items": { "type": "string" } }
+            }
+          }
+        },
+        "data_flows": { "type": "array", "items": { "type": "string" } },
+        "technical_decisions": { "type": "array", "items": { "type": "string" } },
+        "risks": { "type": "array", "items": { "type": "string" } }
+      }
+    },
+    "implementation_plan": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["steps"],
+      "properties": {
+        "steps": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["step_id", "title", "files", "scope", "dependencies", "complexity"],
+            "properties": {
+              "step_id": {
+                "type": "string",
+                "pattern": "^STEP-[0-9]{3}$"
+              },
+              "title": { "type": "string" },
+              "files": { "type": "array", "items": { "type": "string" } },
+              "scope": { "type": "string" },
+              "dependencies": { "type": "array", "items": { "type": "string" } },
+              "complexity": {
+                "type": "string",
+                "enum": ["straightforward", "moderate", "complex"]
+              }
+            }
+          }
+        }
+      }
+    },
+    "design_contract": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["acceptance_criteria", "exclusions", "assumptions"],
+      "properties": {
+        "acceptance_criteria": { "type": "array", "items": { "type": "string" } },
+        "exclusions": { "type": "array", "items": { "type": "string" } },
+        "assumptions": { "type": "array", "items": { "type": "string" } }
+      }
+    }
+  }
+}

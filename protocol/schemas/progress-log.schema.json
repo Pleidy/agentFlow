@@ -1,0 +1,44 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://agentflow.local/protocol/schemas/progress-log.schema.json",
+  "title": "agentFlow progress log",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "protocol_version",
+    "task_id",
+    "entries"
+  ],
+  "properties": {
+    "protocol_version": { "type": "string" },
+    "task_id": {
+      "type": "string",
+      "enum": ["task02", "mod"]
+    },
+    "entries": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["entry_id", "title", "status", "files", "notes"],
+        "properties": {
+          "entry_id": { "type": "string" },
+          "title": { "type": "string" },
+          "status": {
+            "type": "string",
+            "enum": ["done", "repair_done", "blocked"]
+          },
+          "files": { "type": "array", "items": { "type": "string" } },
+          "notes": { "type": "array", "items": { "type": "string" } },
+          "closed_issue_ids": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^ISSUE-[0-9]{3}$"
+            }
+          }
+        }
+      }
+    }
+  }
+}

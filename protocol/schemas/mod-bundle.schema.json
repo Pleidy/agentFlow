@@ -1,0 +1,64 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://agentflow.local/protocol/schemas/mod-bundle.schema.json",
+  "title": "agentFlow mod bundle",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "protocol_version",
+    "mode",
+    "change_request",
+    "clarifications",
+    "scope",
+    "modified_files",
+    "gate_summary"
+  ],
+  "properties": {
+    "protocol_version": { "type": "string" },
+    "mode": {
+      "type": "string",
+      "enum": ["mod", "mod_full"]
+    },
+    "change_request": { "type": "string" },
+    "clarifications": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "scope": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["max_files", "actual_files", "redirected_to_plan"],
+      "properties": {
+        "max_files": { "type": "integer", "minimum": 1 },
+        "actual_files": { "type": "integer", "minimum": 0 },
+        "redirected_to_plan": { "type": "boolean" }
+      }
+    },
+    "modified_files": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "gate_summary": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["gate", "status", "details"],
+        "properties": {
+          "gate": { "type": "string" },
+          "status": {
+            "type": "string",
+            "enum": [
+              "PASS",
+              "FAIL",
+              "SKIP_NOT_CONFIGURED",
+              "SKIP_TOOL_MISSING",
+              "SKIP_NOT_APPLICABLE"
+            ]
+          },
+          "details": { "type": "string" }
+        }
+      }
+    }
+  }
+}

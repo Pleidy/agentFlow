@@ -77,7 +77,11 @@ The orchestrator MUST:
 
 ### task01: Plan
 
-The planner MUST produce:
+The planner MUST produce a canonical JSON bundle:
+
+- `_agent/plan-bundle.json`
+
+Optional Markdown mirrors MAY also be produced:
 
 - `architecture.md`
 - `implementation-plan.md`
@@ -85,9 +89,10 @@ The planner MUST produce:
 
 Minimum contract:
 
-- `architecture.md` MUST define components, data flow, integration points, technical decisions, and explicit risks.
-- `implementation-plan.md` MUST define ordered steps, target files, change scope, and dependencies.
-- `design-contract.md` MUST define acceptance criteria, explicit exclusions, and assumptions.
+- `plan-bundle.json` MUST conform to `protocol/schemas/plan-bundle.schema.json`
+- the architecture section MUST define components, data flow, integration points, technical decisions, and explicit risks
+- the implementation plan section MUST define ordered steps, target files, change scope, and dependencies
+- the design contract section MUST define acceptance criteria, explicit exclusions, and assumptions
 
 `task01` MUST block `task02` when the evaluator judgment is `FAIL` or `UNRESOLVED`.
 
@@ -96,7 +101,7 @@ Minimum contract:
 The builder MUST:
 
 - follow the approved plan in order
-- update `progress-log.md`
+- update a canonical JSON progress log
 - scope changes to planned files unless a repair explicitly requires otherwise
 
 The evaluator MUST run configured gates and compare code against plan and contract.
@@ -114,6 +119,21 @@ The evaluator MUST verify that delivery artifacts match the approved contract an
 
 This path MAY skip task01 when the change is bounded to 1-3 files and does not require architecture work. If the scope expands beyond that bound, the orchestrator SHOULD redirect to `/agentflow:plan`.
 
+The mod builder MUST produce a canonical JSON bundle:
+
+- `_agent/mod-bundle.json`
+
+When `/agentflow:mod --full` is used, the runtime MUST also maintain canonical JSON logs:
+
+- `progress-log.json`
+- `run-log.json`
+
+Optional Markdown mirrors MAY also be produced:
+
+- `_run/{feature}/mod-review.md`
+- `progress-log.md`
+- `run-log.md`
+
 ## 6. Hard Protocol Rules
 
 1. The orchestrator `MUST NOT` write deliverable code.
@@ -128,6 +148,10 @@ This path MAY skip task01 when the change is bounded to 1-3 files and does not r
 10. Runtime state `MUST` be machine-readable JSON and conform to `protocol/schemas/state.schema.json`.
 11. Events `MUST` conform to `protocol/schemas/event.schema.json`.
 12. Review reports `MUST` conform to `protocol/schemas/review-report.schema.json`.
+13. Planner bundles `MUST` conform to `protocol/schemas/plan-bundle.schema.json`.
+14. Mod bundles `MUST` conform to `protocol/schemas/mod-bundle.schema.json`.
+15. Run logs `MUST` conform to `protocol/schemas/run-log.schema.json`.
+16. Progress logs `MUST` conform to `protocol/schemas/progress-log.schema.json`.
 
 ## 7. Gate Semantics
 
@@ -187,11 +211,20 @@ Continuation policy:
 
 - `STATE_FILE`
 - `EVENTS_FILE`
+- `_agent/plan-bundle.json`
+- `_agent/mod-bundle.json` for `/agentflow:mod`
+- `progress-log.json`
+- `run-log.json`
 - `taskXX-review.json`
 
 ### Optional human-readable mirrors
 
+- `architecture.md`
+- `implementation-plan.md`
+- `_agent/design-contract.md`
+- `progress-log.md`
 - `run-log.md`
+- `_run/{feature}/mod-review.md`
 - `taskXX-review.md`
 
 Human-readable mirrors MAY exist, but JSON artifacts are authoritative.

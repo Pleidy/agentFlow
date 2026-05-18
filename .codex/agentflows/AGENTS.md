@@ -1,4 +1,4 @@
-# agentFlow Platform Adapter — Codex
+# agentFlow Platform Adapter - Codex
 
 Protocol version: `1.0.0`
 
@@ -42,9 +42,12 @@ Persistent adapter files:
 Per-run files:
 
 - `.codex/agentflows/_run/{feature}/events.jsonl`
-- `.codex/agentflows/_run/{feature}/run-log.md`
+- `.codex/agentflows/_run/{feature}/run-log.json`
+- `.codex/agentflows/specs/{feature}/_agent/plan-bundle.json`
+- `.codex/agentflows/specs/{feature}/_agent/mod-bundle.json`
+- `.codex/agentflows/specs/{feature}/progress-log.json`
 - `.codex/agentflows/specs/{feature}/_agent/review-reports/taskXX-review.json`
-- optional `.md` mirrors for review readability
+- optional Markdown mirrors such as `architecture.md`, `implementation-plan.md`, `progress-log.md`, `run-log.md`, and `taskXX-review.md`
 
 ## 4. Agent Prompts
 
@@ -62,7 +65,7 @@ The orchestrator MUST prepend the role prompt and append the task-specific hando
 
 ### Launch
 
-Codex launches planner, builder, and evaluator as child agents/subtasks. The orchestrator MUST record agent IDs in `.codex/agentflows/state.json`.
+Codex launches planner, builder, and evaluator as child agents or subtasks. The orchestrator MUST record agent IDs in `.codex/agentflows/state.json`.
 
 ### Resume
 
@@ -70,34 +73,30 @@ When a task enters repair:
 
 - the builder MUST be resumed, not replaced
 - the evaluator MUST be resumed, not replaced, when the platform supports evaluator continuity
-- the active review report path and open issue IDs MUST be passed back in
+- the active review report JSON path and open issue IDs MUST be passed back in
 
 ### Halt
 
-If Codex does not return an agent/subtask ID, the orchestrator MUST halt the task and emit a `warning` event.
+If Codex does not return an agent or subtask ID, the orchestrator MUST halt the task and emit a `warning` event.
 
 ## 6. Codex Configuration Rules
 
-- `.codex/agentflows/config.yaml` is the canonical place for configured lint/typecheck/test commands.
-- Empty command strings mean `SKIP_NOT_CONFIGURED`.
-- `.codex/agentflows/hooks.json` MAY define automation hooks, but empty hooks are the safe default.
-- Platform adapters MUST NOT ship hard-coded technology-specific gate commands as active defaults.
+- `.codex/agentflows/config.yaml` is the canonical place for configured lint/typecheck/test commands
+- empty command strings mean `SKIP_NOT_CONFIGURED`
+- `.codex/agentflows/hooks.json` MAY define automation hooks, but empty hooks are the safe default
+- platform adapters MUST NOT ship hard-coded technology-specific gate commands as active defaults
 
-## 7. Review Contract
+## 7. Artifact Contract
 
-Codex evaluators MUST write canonical JSON reports using the review report schema:
+Canonical artifacts:
 
-- `task01-review.json`
-- `task02-review.json`
-- `task03-review.json`
+- planner output: `_agent/plan-bundle.json`
+- mod output: `_agent/mod-bundle.json`
+- progress tracking: `progress-log.json`
+- runtime tracking: `run-log.json`
+- evaluator output: `taskXX-review.json`
 
-Optional Markdown mirrors MAY be written for human reading:
-
-- `task01-review.md`
-- `task02-review.md`
-- `task03-review.md`
-
-If both exist, the JSON file is authoritative.
+Optional Markdown mirrors MAY exist for human reading, but MUST NOT override the JSON artifacts.
 
 ## 8. Recovery Contract
 
@@ -106,6 +105,7 @@ Recovery decisions MUST be based on:
 1. `.codex/agentflows/state.json`
 2. the latest `events.jsonl`
 3. the latest task review JSON
+4. `progress-log.json` and `run-log.json` when present
 
 Recovery SHOULD NOT depend on parsing human-readable Markdown.
 

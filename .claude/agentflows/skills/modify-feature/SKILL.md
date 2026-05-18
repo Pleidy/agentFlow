@@ -2,66 +2,62 @@
 
 ## Description
 
-Execute a lightweight modification flow — clarify a rough change description, implement the fix, and run quality gates. No spec, no architecture planning. For bug fixes, small tweaks, and iterations on existing features.
+Execute a lightweight modification flow - clarify a rough change description, implement the fix, and run quality gates. No spec, no architecture planning. Use this for bug fixes, small tweaks, and bounded iterations on existing features.
 
 ## When to Use
 
-- User says `/agentflow:mod` (no argument) — infer what to change from context
-- User says `/agentflow:mod "description"` — clarify description then implement
-- User says `/agentflow:mod --full "description"` — same, plus progress-log and review-report
-- Changes span 1-3 files, no new architecture needed
-
----
+- User says `/agentflow:mod` with or without a description
+- User says `/agentflow:mod --full "description"`
+- Changes span 1-3 files and do not need new architecture
 
 ## Flow
 
 ### Step 1: Understand the Change
 
-Receive the user's description. If it's vague, ask focused questions — one at a time — to reach clarity:
+Receive the user's description. If it is vague, ask focused questions one at a time to reach clarity:
 
-- **What** to change: exact behavior being modified
-- **Where** to change: locate to file/function level
-- **How** to change: expected behavior after the fix
+- **What** to change
+- **Where** to change
+- **How** the behavior should work afterward
 
-This is NOT the 7-dimension onion peeling of `/agentflow:spec`. Stop when the change is clear enough to implement. Three focused questions maximum before asking "是否足够清晰，可以开始改代码？"
+This is not the 7-dimension spec-writing workflow. Stop when the change is clear enough to implement. Maximum 3 clarification rounds.
 
 ### Step 2: Implement
 
-Launch Builder via `Agent` tool:
-```
-subagent_type: "general-purpose"
-description: "Modify: {brief change description}"
-prompt: [读取 .claude/agentflows/agents/implementation-builder.md]
-        + "\n\n## Task: Modify Feature\n\n"
-        + "Change description: {clarified description}\n"
-        + "Files to modify: {located file paths}\n"
-        + "\nImplement the change. Return modified file paths and a brief summary."
-```
+Launch the Builder and require it to produce:
+
+- `{OUTPUT_DIR}/_agent/mod-bundle.json`
+
+This file MUST conform to `protocol/schemas/mod-bundle.schema.json`.
 
 ### Step 3: Run Gates
 
-Launch Evaluator:
-```
-subagent_type: "general-purpose"
-description: "Evaluate modification"
-prompt: [读取 .claude/agentflows/agents/quality-evaluator.md]
-        + "\n\n## Task: Review Modification\n\n"
-        + "Review the recent code changes. Run lint, typecheck, test.\n"
-        + "Determine PASS or FAIL."
-```
+Launch the Evaluator to review the recent code changes and write the canonical JSON review report.
 
-If FAIL → resume same Builder for repair (max 2 rounds).
+If FAIL, resume the same Builder for repair for at most 2 rounds.
 
-### Step 4: Report
+### Step 4: Full Mode Logs
 
-- Default mode: report modified files + gate results
-- `--full` mode: also write `_run/{feature}/mod-review.md` + update progress-log
+If `--full` is active, also update:
 
----
+- `{OUTPUT_DIR}/progress-log.json`
+- `{RUN_DIR}/run-log.json`
+
+Optional Markdown mirrors MAY also exist:
+
+- `{OUTPUT_DIR}/progress-log.md`
+- `{RUN_DIR}/mod-review.md`
+- `{RUN_DIR}/run-log.md`
+
+### Step 5: Report
+
+- Default mode: report modified files and gate results
+- `--full` mode: report modified files, gate results, and JSON artifact paths
 
 ## Guardrails
 
 - Do NOT initiate spec writing or architecture planning
-- Do NOT ask the 7-dimension questions — stick to what/where/how
-- If the change scope grows beyond 3 files, suggest `/agentflow:plan` instead
+- Do NOT ask the 7-dimension questions - stick to what/where/how
+- If the change scope grows beyond 3 files, redirect to `/agentflow:plan`
 - One question per round, max 3 clarification rounds before implementing
+- Treat JSON artifacts as authoritative

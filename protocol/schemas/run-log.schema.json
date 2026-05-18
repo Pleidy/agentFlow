@@ -1,0 +1,35 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://agentflow.local/protocol/schemas/run-log.schema.json",
+  "title": "agentFlow run log",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "protocol_version",
+    "run_id",
+    "project",
+    "entries"
+  ],
+  "properties": {
+    "protocol_version": { "type": "string" },
+    "run_id": { "type": "string" },
+    "project": { "type": "string" },
+    "entries": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["timestamp", "phase", "message"],
+        "properties": {
+          "timestamp": { "type": "string", "format": "date-time" },
+          "phase": { "type": "string" },
+          "task_id": {
+            "type": ["string", "null"],
+            "enum": [null, "task01", "task02", "task03", "mod"]
+          },
+          "message": { "type": "string" }
+        }
+      }
+    }
+  }
+}
