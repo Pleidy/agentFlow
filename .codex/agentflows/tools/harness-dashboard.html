@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>agentFlow Harness Dashboard — Codex</title>
+<style>
+  :root { --bg: #0d1117; --surface: #161b22; --border: #30363d; --text: #c9d1d9; --muted: #8b949e; --green: #3fb950; --red: #f85149; --yellow: #d2991d; --blue: #58a6ff; --codex: #10a37f; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); padding: 24px; max-width: 960px; margin: 0 auto; }
+  h1 { font-size: 20px; margin-bottom: 8px; display: flex; align-items: center; gap: 8px; }
+  h1 .badge { background: var(--codex); color: #fff; font-size: 10px; padding: 2px 8px; border-radius: 12px; font-weight: 600; }
+  h2 { font-size: 14px; color: var(--muted); font-weight: 400; margin-bottom: 24px; }
+  .upload-zone { border: 2px dashed var(--border); border-radius: 8px; padding: 40px; text-align: center; cursor: pointer; margin-bottom: 24px; transition: border-color .2s; }
+  .upload-zone:hover { border-color: var(--codex); }
+  .upload-zone.loaded { border-color: var(--green); border-style: solid; }
+  .phase-bar { display: flex; gap: 4px; margin-bottom: 24px; }
+  .phase-step { flex: 1; padding: 12px 8px; text-align: center; border-radius: 6px; background: var(--surface); border: 1px solid var(--border); font-size: 12px; }
+  .phase-step.active { border-color: var(--codex); background: #1a2a22; }
+  .phase-step.done { border-color: var(--green); background: #1a2a1a; }
+  .phase-step.failed { border-color: var(--red); background: #2a1a1a; }
+  .phase-step .emoji { font-size: 18px; display: block; margin-bottom: 4px; }
+  .task-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 24px; }
+  .task-card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 16px; }
+  .task-card h3 { font-size: 13px; margin-bottom: 12px; }
+  .task-card .verdict { font-size: 24px; text-align: center; padding: 8px; }
+  .task-card .verdict.pass { color: var(--green); }
+  .task-card .verdict.fail { color: var(--red); }
+  .task-card .verdict.pending { color: var(--muted); }
+  .task-card .meta { font-size: 11px; color: var(--muted); margin-top: 8px; }
+  .timeline { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
+  .timeline h3 { padding: 12px 16px; border-bottom: 1px solid var(--border); font-size: 13px; }
+  .event { padding: 8px 16px; border-bottom: 1px solid var(--border); font-size: 12px; display: flex; gap: 12px; align-items: baseline; }
+  .event .ts { color: var(--muted); white-space: nowrap; min-width: 100px; font-family: monospace; }
+  .event .type { color: var(--codex); min-width: 140px; font-family: monospace; font-size: 11px; }
+  .event .detail { flex: 1; }
+  .summary { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 24px; }
+  .stat { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 16px; text-align: center; }
+  .stat .value { font-size: 28px; font-weight: 600; }
+  .stat .label { font-size: 11px; color: var(--muted); margin-top: 4px; }
+  .empty { text-align: center; padding: 40px; color: var(--muted); }
+</style>
+</head>
+<body>
+
+<h1>agentFlow Harness Dashboard <span class="badge">CODEX</span></h1>
+<h2>Multi-Agent Development Orchestration Monitor</h2>
+
+<div id="uploadZone" class="upload-zone" onclick="document.getElementById('fileInput').click()">
+  <p><strong>Drop <code>events.jsonl</code> here</strong> or click to browse</p>
+</div>
+<input type="file" id="fileInput" accept=".jsonl,.json" style="display:none" onchange="handleFiles(this.files)">
+
+<div id="content" style="display:none">
+  <div class="summary" id="summary"></div>
+  <div class="phase-bar" id="phaseBar"></div>
+  <div class="task-grid" id="taskGrid"></div>
+  <div class="timeline" id="timeline"></div>
+</div>
+
+<div id="empty" class="empty">Load an <code>events.jsonl</code> file to visualize the pipeline run</div>
+
+<script>
+const statusEmoji = { '📋': 'Queued', '✏️': 'Building', '🔍': 'Evaluating', '🔧': 'Repairing', '✅': 'Complete', '⚠️': 'Complete (warn)', '❌': 'Failed' };
+const phaseNames = { init: 'Initialize', planning: 'Planning', task_loop: 'Task Loop', finalizing: 'Finalizing', done: 'Done' };
+
+function handleFiles(files) {
+  for (const f of files) {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      if (f.name.endsWith('.jsonl')) parseEvents(e.target.result);
+      else if (f.name === 'state.json') parseState(e.target.result);
+    };
+    reader.readAsText(f);
+  }
+}
+
+function parseEvents(text) {
+  const lines = text.trim().split('\n').filter(l => l.trim());
+  const events = lines.map(l => { try { return JSON.parse(l); } catch(e) { return null; } }).filter(Boolean);
+  window._events = events;
+  if (events.length) {
+    document.getElementById('uploadZone').classList.add('loaded');
+    document.getElementById('empty').style.display = 'none';
+    document.getElementById('content').style.display = 'block';
+  }
+  render();
+}
+
+function parseState(text) {
+  try { window._state = JSON.parse(text); } catch(e) {}
+  render();
+}
+
+function render() {
+  const events = window._events || [];
+  const state = window._state || {};
+  renderSummary(events);
+  renderPhaseBar(events, state);
+  renderTasks(events, state);
+  renderTimeline(events);
+}
+
+function renderSummary(events) {
+  const projStart = events.find(e => e.type === 'project_started');
+  const evals = events.filter(e => e.type === 'evaluation_finished');
+  const passes = evals.filter(e => e.judgment === 'PASS').length;
+  const repairs = events.filter(e => e.type === 'agent_resumed').length;
+  document.getElementById('summary').innerHTML = `
+    <div class="stat"><div class="value" style="color:var(--codex)">${projStart?.project || '—'}</div><div class="label">Project</div></div>
+    <div class="stat"><div class="value">${evals.length}</div><div class="label">Evaluations</div></div>
+    <div class="stat"><div class="value" style="color:var(--green)">${passes}</div><div class="label">PASS</div></div>
+    <div class="stat"><div class="value" style="color:var(--yellow)">${repairs}</div><div class="label">Repairs</div></div>
+  `;
+}
+
+function renderPhaseBar(events, state) {
+  const phases = ['init', 'planning', 'task_loop', 'finalizing', 'done'];
+  const currentPhase = state.phase || 'init';
+  document.getElementById('phaseBar').innerHTML = phases.map((p, i) => {
+    let cls = '';
+    const idx = phases.indexOf(currentPhase);
+    if (i < idx) cls = 'done';
+    else if (i === idx) cls = 'active';
+    const emoji = { init: '🚀', planning: '📐', task_loop: '⚙️', finalizing: '📦', done: '✅' }[p];
+    return `<div class="phase-step ${cls}"><span class="emoji">${emoji}</span>${phaseNames[p] || p}</div>`;
+  }).join('');
+}
+
+function renderTasks(events, state) {
+  const tasks = state.tasks || {};
+  const taskIds = ['task01', 'task02', 'task03'];
+  const titles = { task01: 'Architecture & Design', task02: 'Implementation', task03: 'Verification & Delivery' };
+  document.getElementById('taskGrid').innerHTML = taskIds.map(tid => {
+    const t = tasks[tid] || {};
+    const judgment = t.judgment;
+    let verdictCls = 'pending';
+    if (judgment === 'PASS') verdictCls = 'pass';
+    else if (judgment === 'FAIL') verdictCls = 'fail';
+    return `<div class="task-card">
+      <h3>${tid}: ${titles[tid] || t.title || ''}</h3>
+      <div class="verdict ${verdictCls}">${judgment || statusEmoji[t.status] || '📋'}</div>
+      <div class="meta">${t.iterations ? 'Rounds: ' + t.iterations : ''}${t.outputs?.length ? '<br>Files: ' + t.outputs.length : ''}</div>
+    </div>`;
+  }).join('');
+}
+
+function renderTimeline(events) {
+  if (!events.length) {
+    document.getElementById('timeline').innerHTML = '<h3>Timeline</h3><div class="empty">No events</div>';
+    return;
+  }
+  const items = events.map(e => {
+    const detail = [];
+    if (e.task) detail.push(e.task);
+    if (e.role) detail.push(e.role);
+    if (e.judgment) detail.push(e.judgment === 'PASS' ? 'PASS' : 'FAIL');
+    if (e.round) detail.push('Round ' + e.round);
+    const typeLabel = e.type.replace(/_/g, ' ');
+    return `<div class="event"><span class="ts">${e.ts || ''}</span><span class="type">${typeLabel}</span><span class="detail">${detail.join(' · ') || '—'}</span></div>`;
+  });
+  document.getElementById('timeline').innerHTML = '<h3>Timeline</h3>' + items.join('');
+}
+
+const zone = document.getElementById('uploadZone');
+zone.addEventListener('dragover', e => { e.preventDefault(); });
+zone.addEventListener('drop', e => { e.preventDefault(); handleFiles(e.dataTransfer.files); });
+</script>
+</body>
+</html>

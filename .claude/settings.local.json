@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(gh repo *)",
+      "Bash(gh api *)",
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "Bash(cp -r D:/WEB/onem/funds/claude_code D:/WEB/onem/funds/.agentflow/claude_code)",
+      "Bash(cp -r D:/WEB/onem/funds/codex D:/WEB/onem/funds/.agentflow/codex)",
+      "Bash(cmd *)",
+      "Bash(git -C D:/WEB/onem/funds log --oneline -10)",
+      "Bash(git -C D:/WEB/onem/funds status --short)"
+    ]
+  }
+}

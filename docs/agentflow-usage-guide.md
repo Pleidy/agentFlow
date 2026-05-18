@@ -877,11 +877,28 @@ git push -u origin feature/export
 **解决**：
 1. 读取 `state.md` 查看当前阶段
 2. 读取 `_run/{feature}/run-log.md` 查看最近完成的步骤
-3. 从下一个未完成的步骤继续：
-   ```
-   # 如果卡在 task02 build，手动触发：
-   /agentflow:build specs/user-auth/implementation-plan.md
-   ```
+3. 从下一个未完成的步骤继续。
+
+### 11.6 故障恢复表
+
+| 症状 | 恢复动作 |
+|------|---------|
+| Agent 启动后 10 分钟无响应 | 从 progress-log 最后完成步骤恢复 |
+| lint/typecheck/test 报 exit 127 | 标记 SKIP (tool missing)，提示用户检查命令 |
+| state.md 格式损坏 | 从 events.jsonl 重建 |
+| 2 轮修复后仍 FAIL | 标记 UNRESOLVED，生成人工审查清单 |
+| spec 路径不存在 | 提示用户，建议 `/agentflow:spec` |
+| 下次启动提示未完成运行 | 选择恢复/放弃/查看日志 |
+| 仪表盘启动失败 | 记录 warning，不阻塞 |
+
+### 11.7 跨会话记忆
+
+每次运行后，编排器会将有价值的经验写入 `.claude/agentflows/_run/lessons.md`。写入判据：**"能帮未来的 Agent 避免犯同样的错误吗？"**
+
+- **会写入的**：项目 ESLint 规则、模块导出约定、编码陷阱
+- **不会写入的**：一次性拼写错误、node_modules 损坏
+
+下次运行时，Phase 0 自动加载匹配当前 task 类型的最近 5 条经验（≤500 tokens），注入到 Agent handoff。超过 30 天的旧条目自动归档，重复出现的模式自动塌缩。
 
 ---
 

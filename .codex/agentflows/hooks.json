@@ -1,0 +1,35 @@
+{
+  "hooks": {
+    "pre_build": [
+      {
+        "name": "lint",
+        "command": "npm run lint -- --quiet",
+        "on_failure": "warn"
+      }
+    ],
+    "post_build": [
+      {
+        "name": "typecheck",
+        "command": "npx tsc --noEmit",
+        "on_failure": "block"
+      }
+    ],
+    "pre_evaluate": [
+      {
+        "name": "test",
+        "command": "npm test -- --passWithNoTests",
+        "on_failure": "block"
+      }
+    ]
+  },
+  "agent_recovery": {
+    "enabled": true,
+    "max_retries": 2,
+    "resume_strategy": "conversation_continuation"
+  },
+  "logging": {
+    "events_file": ".codex/agentflows/_run/{feature_name}/events.jsonl",
+    "run_log": ".codex/agentflows/_run/{feature_name}/run-log.md",
+    "level": "info"
+  }
+}

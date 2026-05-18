@@ -1,0 +1,50 @@
+# agentFlow Codex Configuration
+
+agents:
+  feature-planner:
+    description: "Analyzes feature specs and produces architecture + implementation plan"
+    prompt_file: ".codex/agentflows/agents/feature-planner.md"
+    tools: ["read", "glob", "grep", "write"]
+    model: "gpt-5.4"
+
+  implementation-builder:
+    description: "Implements code according to the implementation plan"
+    prompt_file: ".codex/agentflows/agents/implementation-builder.md"
+    tools: ["read", "write", "edit", "glob", "grep", "bash"]
+    model: "gpt-5.4"
+
+  quality-evaluator:
+    description: "Reviews code changes against plan, runs verification gates"
+    prompt_file: ".codex/agentflows/agents/quality-evaluator.md"
+    tools: ["read", "glob", "grep", "bash"]
+    model: "gpt-5.4"
+
+  spec-writer:
+    description: "Helps user write high-quality feature specs interactively"
+    prompt_file: ".codex/agentflows/agents/spec-writer.md"
+    tools: ["read", "write", "glob", "grep"]
+    model: "gpt-5.4"
+
+  mod-builder:
+    description: "Handles lightweight modifications — small changes, bug fixes"
+    prompt_file: ".codex/agentflows/agents/mod-builder.md"
+    tools: ["read", "write", "edit", "glob", "grep", "bash"]
+    model: "gpt-5.4"
+
+pipeline:
+  max_repair_rounds: 2
+  timeout_per_task_minutes: 30
+
+state:
+  file: ".codex/agentflows/state.md"
+  run_dir: ".codex/agentflows/_run"
+
+output:
+  specs_dir: ".codex/agentflows/specs"
+  agent_dir: "_agent"
+  reports_dir: "_agent/review-reports"
+
+commands:
+  lint: "npm run lint"
+  typecheck: "npx tsc --noEmit"
+  test: "npm test"
