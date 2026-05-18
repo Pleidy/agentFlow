@@ -43,6 +43,7 @@ agentFlow 是一个**多 Agent 开发编排协议**。它定义了一套流水�
 | `/agentflow` | 全流程：自动查找最近 spec，确认后 规划 → 实现 → 交付 |
 | `/agentflow <spec>` | 全流程：使用指定 spec 路径 |
 | `/agentflow:spec [想法\|路径]` | 剥洋葱式构建 spec，或审阅改进已有 spec |
+| `/agentflow:mod [描述\|--full]` | 轻量修改：澄清 → 实现 → 门禁 |
 | `/agentflow:plan <spec>` | 仅规划：产出架构设计与实现计划 |
 | `/agentflow:build <plan>` | 仅实现：按计划编码 |
 | `/agentflow:review` | 仅评审：对当前变更运行门禁 |
@@ -67,6 +68,8 @@ agentFlow 是一个**多 Agent 开发编排协议**。它定义了一套流水�
 /agentflow:review                               # 最终评审
 ```
 
+路径说明：上面的 `specs/...` 是逻辑路径。Claude Code 实际位于 `.claude/agentflows/specs/...`，Codex 实际位于 `.codex/agentflows/specs/...`。
+
 ---
 
 ## 安装
@@ -81,6 +84,8 @@ cp -r .codex/agentflows /path/to/your-project/.codex/
 ```
 
 详见 [docs/agentflow-install.md](docs/agentflow-install.md)。
+
+安装后请先按你的项目实际情况调整 `.codex/agentflows/config.yaml` 和 `.codex/agentflows/hooks.json`。模板默认不假设特定技术栈，未配置的 lint/typecheck/test 门禁应被视为 `SKIP`，而不是默认执行 Node 命令。
 
 ---
 
@@ -121,6 +126,16 @@ cp -r .codex/agentflows /path/to/your-project/.codex/
 | [安装指南](docs/agentflow-install.md) | 2 步安装说明 |
 | [`.claude/agentflows/CLAUDE.md`](.claude/agentflows/CLAUDE.md) | Claude Code 版完整编排协议 |
 | [`.codex/agentflows/AGENTS.md`](.codex/agentflows/AGENTS.md) | Codex 版完整编排协议 |
+
+---
+
+## 模板维护检查
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts/validate-agentflow-template.ps1
+```
+
+这个检查会验证关键模板文件是否存在、文档是否仍在使用过时路径示例，以及是否误提交了本地配置。
 
 ---
 

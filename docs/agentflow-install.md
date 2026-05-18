@@ -2,11 +2,16 @@
 
 ## 安装（2 步）
 
+agentFlow 同时提供 Claude Code 版和 Codex 版模板。安装时复制你需要的那一套即可。
+
 ### 步骤 1：复制协议目录
 
 ```bash
 # Claude Code 项目
 cp -r /path/to/agentflow/.claude/agentflows .claude/
+
+# Codex 项目
+cp -r /path/to/agentflow/.codex/agentflows .codex/
 ```
 
 ### 步骤 2：创建项目根引导文件
@@ -26,6 +31,7 @@ cat > CLAUDE.md << 'EOF'
 | `/agentflow` | 全流程：自动查找最近 spec，确认后执行 规划 → 实现 → 交付 |
 | `/agentflow <spec>` | 全流程：使用指定 spec 路径 |
 | `/agentflow:spec [想法\|路径]` | 交互式构建 spec，或审阅改进已有 spec |
+| `/agentflow:mod [描述\|--full]` | 轻量修改：澄清 → 实现 → 门禁 |
 | `/agentflow:plan <spec>` | 仅规划：产出架构设计与实现计划 |
 | `/agentflow:build <plan>` | 仅实现：按计划编码 |
 | `/agentflow:review` | 仅评审：对当前变更运行门禁 |
@@ -49,6 +55,19 @@ EOF
 
 编排器应响应可用命令列表。
 
+## 安装后立刻要做的事
+
+1. 按你的项目技术栈修改 `.codex/agentflows/config.yaml` 中的 `commands.lint`、`commands.typecheck`、`commands.test`。
+2. 如果你要启用自动 hooks，再按相同技术栈修改 `.codex/agentflows/hooks.json`。
+3. 在业务项目的 `.gitignore` 中加入运行时目录：
+
+```gitignore
+.claude/agentflows/_run/
+.codex/agentflows/_run/
+```
+
+模板仓库保留 `_run/.gitkeep` 和 `lessons.md` 只是为了保留目录结构；实际运行生成的日志文件不建议提交。
+
 ## 安装后结构
 
 ```
@@ -64,6 +83,16 @@ your-project/
 │       ├── tools/             # 仪表盘
 │       ├── specs/             # 需求规格
 │       └── _run/              # 运行时日志
+├── .codex/
+│   └── agentflows/
+│       ├── AGENTS.md
+│       ├── config.yaml        # 需要按项目修改命令
+│       ├── hooks.json         # 可选，默认为空 hooks
+│       ├── state.md
+│       ├── agents/
+│       ├── tools/
+│       ├── specs/
+│       └── _run/
 ├── src/
 └── ...
 ```

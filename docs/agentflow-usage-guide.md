@@ -99,10 +99,10 @@ ls .claude/agentflows/CLAUDE.md
 
 根据你的项目修改 lint/test 命令。
 
-**步骤 3**：将 `_run/` 加入 `.gitignore`
+**步骤 3**：将运行时目录加入 `.gitignore`
 
-```bash
-echo "_run/" >> .gitignore
+```gitignore
+.claude/agentflows/_run/
 ```
 
 **步骤 4**：验证安装
@@ -123,15 +123,17 @@ ls .codex/agentflows/AGENTS.md
 
 ```yaml
 commands:
-  lint: "npm run lint"      # 改为你的项目命令
-  typecheck: "npx tsc --noEmit"  # 改为你的项目命令
-  test: "npm test"          # 改为你的项目命令
+  lint: ""       # 留空表示未配置，Evaluator 应标记为 SKIP
+  typecheck: ""  # 改为你的项目命令
+  test: ""       # 改为你的项目命令
 ```
 
-**步骤 3**：将 `_run/` 加入 `.gitignore`
+首次安装后，把这些值替换成你的项目命令；如果某个门禁不适用，保留空字符串即可。
 
-```bash
-echo "_run/" >> .gitignore
+**步骤 3**：将运行时目录加入 `.gitignore`
+
+```gitignore
+.codex/agentflows/_run/
 ```
 
 **步骤 4**：验证安装
@@ -146,7 +148,12 @@ echo "_run/" >> .gitignore
 
 Spec 文件是你与编排系统的**唯一输入**。Agent 的所有决策依据必须来自这个文件。
 
-在 `specs/{feature-name}/` 下创建 `feature-spec.md`：
+逻辑路径写作 `specs/{feature-name}/feature-spec.md`。实际存放位置取决于你使用的版本：
+
+- Claude Code：`.claude/agentflows/specs/{feature-name}/feature-spec.md`
+- Codex：`.codex/agentflows/specs/{feature-name}/feature-spec.md`
+
+在对应目录下创建 `feature-spec.md`：
 
 ```markdown
 # Feature: {功能名称}
@@ -310,19 +317,19 @@ Spec 文件是你与编排系统的**唯一输入**。Agent 的所有决策依�
 ### 4.3 典型使用流程
 
 ```bash
-# 步骤 1：编写 spec（或用 /agentflow:spec 交互式构建）
-mkdir -p specs/user-auth
-vim specs/user-auth/feature-spec.md
+# 步骤 1：编写 spec（逻辑路径写作 specs/...）
+mkdir -p .codex/agentflows/specs/user-auth
+vim .codex/agentflows/specs/user-auth/feature-spec.md
 
 # 步骤 2：触发全流程
 # 方式 A：直接执行（如果刚刚写过 spec，agentFlow 会自动找到它）
 /agentflow
-# → 编排器检测到 specs/user-auth/feature-spec.md 是最近 spec
-# → "使用 spec: specs/user-auth/feature-spec.md？[Y/n]"
+# → 编排器检测到 .codex/agentflows/specs/user-auth/feature-spec.md 是最近 spec
+# → "使用 spec: .codex/agentflows/specs/user-auth/feature-spec.md？[Y/n]"
 # → 确认后启动流水线
 
 # 方式 B：显式指定路径
-/agentflow specs/user-auth/feature-spec.md
+/agentflow .codex/agentflows/specs/user-auth/feature-spec.md
 
 # 此时编排器自动执行：
 # → Phase 0: 初始化（创建目录、解析变量）
@@ -370,19 +377,19 @@ git commit -m "feat: add user authentication"
 编排器自动执行：
 1. 读取 spec 文件路径，生成项目名（从目录名 + 时间戳）
 2. 创建目录结构
-3. 写入 `state.md`（phase=init）
-4. 写入 `_run/{name}/run-log.md` 首条
-5. 写入 `_run/{name}/events.jsonl` 首条 `project_started` 事件
+3. 写入 `.claude/agentflows/state.md` 或 `.codex/agentflows/state.md`（phase=init）
+4. 写入对应版本的 `_run/{name}/run-log.md` 首条
+5. 写入对应版本的 `_run/{name}/events.jsonl` 首条 `project_started` 事件
 6. 尝试启动仪表盘（失败不阻塞）
 
 **此时 state.md 的内容**：
 
 ```yaml
 phase: init
-spec_file: specs/user-auth/feature-spec.md
+spec_file: .codex/agentflows/specs/user-auth/feature-spec.md
 feature_name: user-auth
-output_dir: specs/user-auth/
-run_dir: _run/user-auth/
+output_dir: .codex/agentflows/specs/user-auth/
+run_dir: .codex/agentflows/_run/user-auth/
 ```
 
 ### 5.2 阶段 1：规划（5-15分钟）
@@ -475,9 +482,9 @@ Client → AuthController → AuthService → UserRepository → DB
 4. 所有文件实现完后，返回修改文件列表
 5. 编排器启动 **Quality Evaluator** 运行门禁：
    ```
-   npm run lint     → 通过？
-   npx tsc --noEmit → 通过？
-   npm test         → 通过？
+   [lint command]      → 通过？
+   [typecheck command] → 通过？
+   [test command]      → 通过？
    AI 评审          → 代码是否按计划实现？
    ```
 6. 如果任一门禁失败 → 恢复同一建造师修复（最多 2 轮）
@@ -553,13 +560,13 @@ Client → AuthController → AuthService → UserRepository → DB
 
 ### 6.1 文件分类
 
-每次运行完成后，`specs/{feature}/` 下有三类文件：
+每次运行完成后，对应版本的 `specs/{feature}/` 下有三类文件：
 
 | 类别 | 目录 | 用途 | 你该关注的 |
 |------|------|------|-----------|
 | **面向你的交付物** | 根目录 | 架构、计划、文档 | ✅ 全部 |
 | **Agent 内部文件** | `_agent/` | 合约、评审报告 | ✅ 评审报告 |
-| **运行时日志** | `_run/{feature}/` | 事件流、状态 | ❌ 一般不需要看 |
+| **运行时日志** | `.claude/agentflows/_run/{feature}/` 或 `.codex/agentflows/_run/{feature}/` | 事件流、状态 | ❌ 一般不需要看 |
 
 ### 6.2 首先看什么
 
@@ -646,7 +653,7 @@ FAIL → 再次修复（最多 2 轮）
 
 - **2 轮修复后仍然 FAIL** — 编排器会继续但标记 ⚠️，你需要判断是否接受
 - **架构方向错误** — 规划师可能误解了 spec，需要你重写 spec 或手动修改 architecture.md
-- **编排器卡住** — 如果超时或重复循环，检查 `_run/{feature}/run-log.md` 了解卡在哪一步
+- **编排器卡住** — 如果超时或重复循环，检查对应版本的 `_run/{feature}/run-log.md` 了解卡在哪一步
 
 ---
 
@@ -655,7 +662,9 @@ FAIL → 再次修复（最多 2 轮）
 ### 8.1 启动仪表盘
 
 ```bash
-./tools/open-dashboard.sh
+.claude/agentflows/tools/open-dashboard.sh
+# 或
+.codex/agentflows/tools/open-dashboard.sh
 ```
 
 脚本自动查找最近的 `events.jsonl` 并在浏览器中打开仪表盘。
@@ -674,7 +683,7 @@ FAIL → 再次修复（最多 2 轮）
 如果自动查找失败：
 
 1. 打开仪表盘页面
-2. 将 `_run/{feature}/events.jsonl` 拖入页面区域
+2. 将对应版本的 `_run/{feature}/events.jsonl` 拖入页面区域
 3. （可选）同时拖入 `state.json` 查看任务详情
 
 ### 8.4 事件类型速查
@@ -724,7 +733,7 @@ git push -u origin feature/user-auth
 - **触发前确保工作区干净** — `git stash` 或提交现有变更
 - **每次 agentFlow 运行放在独立分支** — 方便回滚
 - **不要在一个分支上多次运行 agentFlow** — 每次运行创建新分支
-- **`_run/` 目录加入 `.gitignore`** — 运行时日志不进入版本控制
+- **将 `.claude/agentflows/_run/` 或 `.codex/agentflows/_run/` 加入 `.gitignore`** — 运行时日志不进入版本控制
 
 ---
 
@@ -875,8 +884,8 @@ git push -u origin feature/export
 **症状**：流水线因超时、网络错误或工具调用失败中断。
 
 **解决**：
-1. 读取 `state.md` 查看当前阶段
-2. 读取 `_run/{feature}/run-log.md` 查看最近完成的步骤
+1. 读取 `.claude/agentflows/state.md` 或 `.codex/agentflows/state.md` 查看当前阶段
+2. 读取对应版本的 `_run/{feature}/run-log.md` 查看最近完成的步骤
 3. 从下一个未完成的步骤继续。
 
 ### 11.6 故障恢复表
@@ -973,10 +982,10 @@ agents:
 | 仅规划 | `/agentflow:plan specs/x/feature-spec.md` | `/agentflow:plan specs/x/feature-spec.md` |
 | 从计划实现 | `/agentflow:build specs/x/implementation-plan.md` | `/agentflow:build specs/x/implementation-plan.md` |
 | 仅评审 | `/agentflow:review` | `/agentflow:review` |
-| 查看状态 | `cat state.md` | `cat state.md` |
-| 启动仪表盘 | `./tools/open-dashboard.sh` | `./tools/open-dashboard.sh` |
+| 查看状态 | `cat .claude/agentflows/state.md` | `cat .codex/agentflows/state.md` |
+| 启动仪表盘 | `.claude/agentflows/tools/open-dashboard.sh` | `.codex/agentflows/tools/open-dashboard.sh` |
 | Agent 恢复机制 | Agent 工具 SendMessage | task conversation continuation |
-| 配置文件 | `.claude/agentflows/settings.json` | `.codex/agentflows/config.yaml` + `hooks.json` |
+| 配置文件 | `.claude/agentflows/settings.json` | `.codex/agentflows/config.yaml` + `.codex/agentflows/hooks.json` |
 
 ---
 
@@ -997,14 +1006,14 @@ agents:
 ### 目录速查
 
 ```
-specs/{feature}/           ← 交付物（给你的）
-specs/{feature}/_agent/    ← Agent 内部（评审报告在这）
-_run/{feature}/            ← 运行时日志（调试用）
-state.md                   ← 当前状态（中断恢复用）
+.claude/agentflows/specs/{feature}/ 或 .codex/agentflows/specs/{feature}/  ← 交付物（给你的）
+.../specs/{feature}/_agent/                                               ← Agent 内部（评审报告在这）
+.claude/agentflows/_run/{feature}/ 或 .codex/agentflows/_run/{feature}/   ← 运行时日志（调试用）
+.claude/agentflows/state.md 或 .codex/agentflows/state.md                 ← 当前状态（中断恢复用）
 ```
 
 ### 发现问题时首先查看
 
 1. `_agent/review-reports/task02-review.md` — 代码评审结果
-2. `_run/{feature}/run-log.md` — 运行日志
-3. `state.md` — 当前状态
+2. 对应版本的 `_run/{feature}/run-log.md` — 运行日志
+3. 对应版本的 `state.md` — 当前状态

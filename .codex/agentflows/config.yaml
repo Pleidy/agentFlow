@@ -45,6 +45,6 @@ output:
   reports_dir: "_agent/review-reports"
 
 commands:
-  lint: "npm run lint"
-  typecheck: "npx tsc --noEmit"
-  test: "npm test"
+  lint: ""
+  typecheck: ""
+  test: ""

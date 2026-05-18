@@ -1,26 +1,8 @@
 {
   "hooks": {
-    "pre_build": [
-      {
-        "name": "lint",
-        "command": "npm run lint -- --quiet",
-        "on_failure": "warn"
-      }
-    ],
-    "post_build": [
-      {
-        "name": "typecheck",
-        "command": "npx tsc --noEmit",
-        "on_failure": "block"
-      }
-    ],
-    "pre_evaluate": [
-      {
-        "name": "test",
-        "command": "npm test -- --passWithNoTests",
-        "on_failure": "block"
-      }
-    ]
+    "pre_build": [],
+    "post_build": [],
+    "pre_evaluate": []
   },
   "agent_recovery": {
     "enabled": true,
