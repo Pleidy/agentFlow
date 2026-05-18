@@ -1,0 +1,67 @@
+{
+  "$schema": "../../protocol/schemas/state.schema.json",
+  "protocol_version": "1.0.0",
+  "platform": "claude",
+  "run": {
+    "run_id": null,
+    "project": null,
+    "phase": "idle",
+    "mode": "idle",
+    "current_task_id": null,
+    "started_at": null,
+    "updated_at": null
+  },
+  "paths": {
+    "spec_file": null,
+    "feature_name": null,
+    "output_dir": null,
+    "run_dir": null,
+    "events_file": null,
+    "dashboard_url": null
+  },
+  "instances": {
+    "planner": null,
+    "task01": { "builder": null, "evaluator": null },
+    "task02": { "builder": null, "evaluator": null },
+    "task03": { "builder": null, "evaluator": null },
+    "mod": { "builder": null, "evaluator": null }
+  },
+  "tasks": {
+    "task01": {
+      "title": "Architecture & Design",
+      "status": "pending",
+      "iterations": 0,
+      "judgment": null,
+      "failure_class": null,
+      "outputs": [],
+      "report_path": null,
+      "open_issue_ids": []
+    },
+    "task02": {
+      "title": "Implementation",
+      "status": "pending",
+      "iterations": 0,
+      "judgment": null,
+      "failure_class": null,
+      "outputs": [],
+      "report_path": null,
+      "open_issue_ids": []
+    },
+    "task03": {
+      "title": "Verification & Delivery",
+      "status": "pending",
+      "iterations": 0,
+      "judgment": null,
+      "failure_class": null,
+      "outputs": [],
+      "report_path": null,
+      "open_issue_ids": []
+    }
+  },
+  "discipline": {
+    "orchestrator_writes_code": false,
+    "handoffs_use_paths_only": true,
+    "evaluator_is_readonly": true,
+    "repair_resumes_same_agent": true
+  }
+}

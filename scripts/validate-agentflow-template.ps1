@@ -49,10 +49,16 @@ $requiredFiles = @(
     "README.md",
     "docs/agentflow-install.md",
     "docs/agentflow-usage-guide.md",
+    "protocol/core-spec.md",
+    "protocol/schemas/state.schema.json",
+    "protocol/schemas/event.schema.json",
+    "protocol/schemas/review-report.schema.json",
     ".claude/agentflows/CLAUDE.md",
+    ".claude/agentflows/state.json",
     ".claude/agentflows/settings.json",
     ".claude/agentflows/tools/open-dashboard.sh",
     ".codex/agentflows/AGENTS.md",
+    ".codex/agentflows/state.json",
     ".codex/agentflows/config.yaml",
     ".codex/agentflows/hooks.json",
     ".codex/agentflows/tools/open-dashboard.sh"
@@ -67,10 +73,16 @@ Assert-NotExists -Path ".claude/settings.local.json" -Message "Local Claude sett
 Assert-NotMatch -Path ".codex/agentflows/config.yaml" -Pattern 'npm run lint|npx tsc --noEmit|npm test' -Message "Default Codex commands should stay unconfigured; avoid hard-coded Node commands."
 Assert-NotMatch -Path ".codex/agentflows/hooks.json" -Pattern 'npm run lint|npx tsc --noEmit|npm test' -Message "Default Codex hooks should not hard-code Node commands."
 Assert-NotMatch -Path "docs/agentflow-usage-guide.md" -Pattern 'cat state\.md' -Message "Use actual .claude/.codex state paths instead of root state.md."
+Assert-NotMatch -Path "README.md" -Pattern 'state\.md' -Message "README should reference machine-readable state.json instead of state.md."
 Assert-NotMatch -Path "docs/agentflow-usage-guide.md" -Pattern '\./tools/open-dashboard\.sh' -Message "Use actual .claude/.codex dashboard launcher paths."
 Assert-NotMatch -Path "docs/agentflow-usage-guide.md" -Pattern 'echo "_run/" >> \.gitignore' -Message "Use scoped .claude/.codex runtime ignore paths instead of root _run/."
 Assert-Match -Path "README.md" -Pattern '/agentflow:mod' -Message "README command table should include /agentflow:mod."
 Assert-Match -Path "README.md" -Pattern 'validate-agentflow-template\.ps1' -Message "README should mention the template validation script."
+Assert-Match -Path "README.md" -Pattern 'protocol/core-spec\.md' -Message "README should mention the core spec."
+Assert-Match -Path ".codex/agentflows/AGENTS.md" -Pattern 'core-spec\.md' -Message "Codex adapter should inherit from the core spec."
+Assert-Match -Path ".claude/agentflows/CLAUDE.md" -Pattern 'core-spec\.md' -Message "Claude adapter should inherit from the core spec."
+Assert-Match -Path ".codex/agentflows/agents/quality-evaluator.md" -Pattern 'review-report\.schema\.json' -Message "Codex evaluator should reference the review report schema."
+Assert-Match -Path ".claude/agentflows/agents/quality-evaluator.md" -Pattern 'review-report\.schema\.json' -Message "Claude evaluator should reference the review report schema."
 
 if ($errors.Count -gt 0) {
     Write-Host "agentFlow template validation failed:" -ForegroundColor Red

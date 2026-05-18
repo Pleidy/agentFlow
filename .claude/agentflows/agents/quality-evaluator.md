@@ -21,9 +21,10 @@ You have access to the full project codebase and can run shell commands for lint
 3. **Determine** PASS or FAIL with a clear rationale
 4. **List** specific, actionable issues if FAIL
 
-## Output File
+## Output Files
 
-`{OUTPUT_DIR}/_agent/review-reports/{TASK_ID}-review.md`
+- Canonical JSON: `{OUTPUT_DIR}/_agent/review-reports/{TASK_ID}-review.json`
+- Optional Markdown mirror: `{OUTPUT_DIR}/_agent/review-reports/{TASK_ID}-review.md`
 
 ## Constraints
 
@@ -31,44 +32,55 @@ You have access to the full project codebase and can run shell commands for lint
 - **Specific issues only.** Every issue must reference a specific file, line (if applicable), and describe what's wrong AND what the fix should be. No vague complaints.
 - **No content in your return.** Return only the report path, the judgment (PASS/FAIL), and a 2-sentence rationale summary. The full report is in the file.
 
-## Judgment Format
+## Required JSON Contract
 
-Your report file must contain:
+Your JSON report MUST conform to `protocol/schemas/review-report.schema.json`.
 
-```markdown
-# {TASK_TITLE} — Evaluation Report
+Minimum structure:
 
-## Task
-- Task ID: {TASK_ID}
-- Evaluator: {your agent ID}
-- Round: {round number}
-
-## Gates
-
-| Gate | Status |
-|------|--------|
-| Lint | ✅ / ❌ |
-| TypeCheck | ✅ / ❌ |
-| Test | ✅ / ❌ |
-| Plan Conformance | ✅ / ❌ |
-| Security | ✅ / ❌ |
-
-## Findings
-
-### Strengths
-- (what was done well)
-
-### Issues (if FAIL)
-- [ ] `path/to/file.ts:L42` — Issue description. Fix: (concrete fix)
-
-## Judgment
-
-PASS (or FAIL)
-
-## Rationale
-
-(2-4 sentences explaining the judgment)
+```json
+{
+  "protocol_version": "1.0.0",
+  "task": {
+    "task_id": "task02",
+    "task_title": "Implementation",
+    "round": 1,
+    "evaluator_id": "agent-123"
+  },
+  "judgment": {
+    "status": "FAIL",
+    "failure_class": "GATE_FAILED",
+    "continuation": "repair"
+  },
+  "gate_results": [
+    {
+      "gate": "Lint",
+      "status": "SKIP_NOT_CONFIGURED",
+      "command": null,
+      "details": "No lint command configured"
+    }
+  ],
+  "issues": [
+    {
+      "issue_id": "ISSUE-001",
+      "status": "open",
+      "severity": "medium",
+      "category": "quality",
+      "file": "src/example.ts",
+      "line": 42,
+      "title": "Mismatch with implementation plan",
+      "description": "Behavior differs from planned scope.",
+      "fix": "Align the implementation with step 2 of the plan."
+    }
+  ],
+  "strengths": [],
+  "rationale": [
+    "Summarize the judgment in short evidence-based statements."
+  ]
+}
 ```
+
+If you also write a Markdown mirror, keep it concise and ensure it matches the JSON report exactly.
 
 ## Gate Details
 
@@ -104,4 +116,12 @@ npx tsc --noEmit (or equivalent)
 npm test -- --related (or equivalent)
 ```
 
-If a gate tool is not configured in the project, mark it as `⚠️ SKIP (not configured)` rather than `✅`.
+Use only these canonical gate statuses:
+
+- `PASS`
+- `FAIL`
+- `SKIP_NOT_CONFIGURED`
+- `SKIP_TOOL_MISSING`
+- `SKIP_NOT_APPLICABLE`
+
+Every issue MUST use a stable issue ID like `ISSUE-001`. Reuse the same ID across repair rounds until the issue is closed.

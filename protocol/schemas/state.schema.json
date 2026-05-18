@@ -1,0 +1,217 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://agentflow.local/protocol/schemas/state.schema.json",
+  "title": "agentFlow state",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "protocol_version",
+    "platform",
+    "run",
+    "paths",
+    "instances",
+    "tasks",
+    "discipline"
+  ],
+  "properties": {
+    "protocol_version": {
+      "type": "string"
+    },
+    "platform": {
+      "type": "string",
+      "enum": ["claude", "codex"]
+    },
+    "run": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "run_id",
+        "project",
+        "phase",
+        "mode",
+        "current_task_id",
+        "started_at",
+        "updated_at"
+      ],
+      "properties": {
+        "run_id": {
+          "type": ["string", "null"]
+        },
+        "project": {
+          "type": ["string", "null"]
+        },
+        "phase": {
+          "type": "string",
+          "enum": [
+            "idle",
+            "init",
+            "planning",
+            "building",
+            "evaluating",
+            "repairing",
+            "finalizing",
+            "done",
+            "failed"
+          ]
+        },
+        "mode": {
+          "type": "string",
+          "enum": [
+            "idle",
+            "full",
+            "spec",
+            "plan",
+            "build",
+            "review",
+            "mod"
+          ]
+        },
+        "current_task_id": {
+          "type": ["string", "null"],
+          "enum": [null, "task01", "task02", "task03", "mod"]
+        },
+        "started_at": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        },
+        "updated_at": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        }
+      }
+    },
+    "paths": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "spec_file",
+        "feature_name",
+        "output_dir",
+        "run_dir",
+        "events_file",
+        "dashboard_url"
+      ],
+      "properties": {
+        "spec_file": { "type": ["string", "null"] },
+        "feature_name": { "type": ["string", "null"] },
+        "output_dir": { "type": ["string", "null"] },
+        "run_dir": { "type": ["string", "null"] },
+        "events_file": { "type": ["string", "null"] },
+        "dashboard_url": { "type": ["string", "null"] }
+      }
+    },
+    "instances": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["planner", "task01", "task02", "task03", "mod"],
+      "properties": {
+        "planner": { "type": ["string", "null"] },
+        "task01": { "$ref": "#/$defs/taskInstances" },
+        "task02": { "$ref": "#/$defs/taskInstances" },
+        "task03": { "$ref": "#/$defs/taskInstances" },
+        "mod": { "$ref": "#/$defs/taskInstances" }
+      }
+    },
+    "tasks": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["task01", "task02", "task03"],
+      "properties": {
+        "task01": { "$ref": "#/$defs/taskState" },
+        "task02": { "$ref": "#/$defs/taskState" },
+        "task03": { "$ref": "#/$defs/taskState" }
+      }
+    },
+    "discipline": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "orchestrator_writes_code",
+        "handoffs_use_paths_only",
+        "evaluator_is_readonly",
+        "repair_resumes_same_agent"
+      ],
+      "properties": {
+        "orchestrator_writes_code": { "type": "boolean" },
+        "handoffs_use_paths_only": { "type": "boolean" },
+        "evaluator_is_readonly": { "type": "boolean" },
+        "repair_resumes_same_agent": { "type": "boolean" }
+      }
+    }
+  },
+  "$defs": {
+    "taskInstances": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["builder", "evaluator"],
+      "properties": {
+        "builder": { "type": ["string", "null"] },
+        "evaluator": { "type": ["string", "null"] }
+      }
+    },
+    "taskState": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "title",
+        "status",
+        "iterations",
+        "judgment",
+        "failure_class",
+        "outputs",
+        "report_path",
+        "open_issue_ids"
+      ],
+      "properties": {
+        "title": { "type": "string" },
+        "status": {
+          "type": "string",
+          "enum": [
+            "pending",
+            "running",
+            "evaluating",
+            "repairing",
+            "passed",
+            "failed",
+            "unresolved",
+            "skipped"
+          ]
+        },
+        "iterations": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "judgment": {
+          "type": ["string", "null"],
+          "enum": [null, "PASS", "FAIL", "UNRESOLVED"]
+        },
+        "failure_class": {
+          "type": ["string", "null"],
+          "enum": [
+            null,
+            "PLAN_INVALID",
+            "BUILD_FAILED",
+            "GATE_FAILED",
+            "EVALUATION_FAILED",
+            "RECOVERY_FAILED",
+            "UNRESOLVED_AFTER_MAX_REPAIRS"
+          ]
+        },
+        "outputs": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "report_path": {
+          "type": ["string", "null"]
+        },
+        "open_issue_ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^ISSUE-[0-9]{3}$"
+          }
+        }
+      }
+    }
+  }
+}

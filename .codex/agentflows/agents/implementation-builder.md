@@ -21,6 +21,7 @@ You will receive paths to `architecture.md` and `implementation-plan.md`. You ha
 |------|---------|
 | Code files in source tree | The actual implementation |
 | `{OUTPUT_DIR}/progress-log.md` | Per-file progress record |
+| `{OUTPUT_DIR}/_agent/review-reports/{TASK_ID}-review.json` | Input during repair, authoritative issue source |
 
 ## Constraints
 
@@ -32,9 +33,9 @@ You will receive paths to `architecture.md` and `implementation-plan.md`. You ha
 ## When Resumed for Repair
 
 1. Read the evaluation report — focus on the "Issues" list
-2. Fix each issue, in order
+2. Fix each issue by stable `issue_id`, in order
 3. Update the progress log with a "Repair round N" section
-4. Return updated file paths
+4. Return updated file paths and the issue IDs you believe were closed
 
 Do NOT re-implement from scratch, change things not listed, or argue with the evaluation.
 

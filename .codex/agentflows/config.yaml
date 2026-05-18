@@ -36,7 +36,7 @@ pipeline:
   timeout_per_task_minutes: 30
 
 state:
-  file: ".codex/agentflows/state.md"
+  file: ".codex/agentflows/state.json"
   run_dir: ".codex/agentflows/_run"
 
 output:

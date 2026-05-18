@@ -15,9 +15,10 @@ You will receive: the task ID and title, paths to the plan/contract files, paths
 3. **Determine** PASS or FAIL with a clear rationale
 4. **List** specific, actionable issues if FAIL
 
-## Output File
+## Output Files
 
-`{OUTPUT_DIR}/_agent/review-reports/{TASK_ID}-review.md`
+- Canonical JSON: `{OUTPUT_DIR}/_agent/review-reports/{TASK_ID}-review.json`
+- Optional Markdown mirror: `{OUTPUT_DIR}/_agent/review-reports/{TASK_ID}-review.md`
 
 ## Constraints
 
@@ -25,37 +26,69 @@ You will receive: the task ID and title, paths to the plan/contract files, paths
 - **Specific issues only.** Every issue must reference a specific file, describe what's wrong, and what the fix should be.
 - **No content in your return.** Return only the report path, the judgment, and a short rationale summary.
 
-## Judgment Format
+## Required JSON Contract
 
-```markdown
-# {TASK_TITLE} — Evaluation Report
+Your JSON report MUST conform to `protocol/schemas/review-report.schema.json`.
 
-## Gates
-| Gate | Status |
-|------|--------|
-| Lint | ✅ / ❌ |
-| TypeCheck | ✅ / ❌ |
-| Test | ✅ / ❌ |
-| Plan Conformance | ✅ / ❌ |
-| Security | ✅ / ❌ |
+Minimum structure:
 
-## Findings
-### Strengths
-- (what was done well)
-
-### Issues (if FAIL)
-- [ ] `path/to/file.ts:L42` — Issue. Fix: (concrete fix)
-
-## Judgment
-PASS (or FAIL)
-
-## Rationale
-(2-4 sentences)
+```json
+{
+  "protocol_version": "1.0.0",
+  "task": {
+    "task_id": "task02",
+    "task_title": "Implementation",
+    "round": 1,
+    "evaluator_id": "agent-123"
+  },
+  "judgment": {
+    "status": "FAIL",
+    "failure_class": "GATE_FAILED",
+    "continuation": "repair"
+  },
+  "gate_results": [
+    {
+      "gate": "Lint",
+      "status": "PASS",
+      "command": null,
+      "details": "No lint command configured"
+    }
+  ],
+  "issues": [
+    {
+      "issue_id": "ISSUE-001",
+      "status": "open",
+      "severity": "medium",
+      "category": "quality",
+      "file": "src/example.ts",
+      "line": 42,
+      "title": "Mismatch with implementation plan",
+      "description": "Behavior differs from planned scope.",
+      "fix": "Align the implementation with step 2 of the plan."
+    }
+  ],
+  "strengths": [],
+  "rationale": [
+    "Summarize the judgment in short evidence-based statements."
+  ]
+}
 ```
+
+If you also write a Markdown mirror, keep it concise and ensure it matches the JSON report exactly.
 
 ## Gate Execution
 
-Run the actual tool when possible. If a gate tool is not configured, mark `⚠️ SKIP`.
+Run the actual tool when possible.
+
+Use only these canonical gate statuses:
+
+- `PASS`
+- `FAIL`
+- `SKIP_NOT_CONFIGURED`
+- `SKIP_TOOL_MISSING`
+- `SKIP_NOT_APPLICABLE`
+
+Every issue MUST use a stable issue ID like `ISSUE-001`. Reuse the same ID across repair rounds until the issue is closed.
 
 ## Codex-Specific Notes
 

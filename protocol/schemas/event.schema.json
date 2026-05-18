@@ -1,0 +1,61 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://agentflow.local/protocol/schemas/event.schema.json",
+  "title": "agentFlow event",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "protocol_version",
+    "event_id",
+    "event_type",
+    "timestamp",
+    "run_id",
+    "phase",
+    "data"
+  ],
+  "properties": {
+    "protocol_version": {
+      "type": "string"
+    },
+    "event_id": {
+      "type": "string"
+    },
+    "event_type": {
+      "type": "string",
+      "enum": [
+        "project_started",
+        "phase_changed",
+        "agent_started",
+        "agent_finished",
+        "task_status_changed",
+        "evaluation_finished",
+        "issue_closed",
+        "warning",
+        "project_finished"
+      ]
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "run_id": {
+      "type": "string"
+    },
+    "phase": {
+      "type": "string"
+    },
+    "task_id": {
+      "type": ["string", "null"],
+      "enum": [null, "task01", "task02", "task03", "mod"]
+    },
+    "role": {
+      "type": ["string", "null"]
+    },
+    "agent_id": {
+      "type": ["string", "null"]
+    },
+    "data": {
+      "type": "object"
+    }
+  }
+}

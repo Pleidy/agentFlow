@@ -28,6 +28,12 @@
 
 agentFlow 是一个**多 Agent 开发编排协议**。它定义了一套流水线，让多个 AI Agent（规划师、建造师、评估师）按照严格的规则协作，将一份需求规格文档转化为可交付的代码变更。
 
+协议阅读顺序：
+
+1. `protocol/core-spec.md` — 平台无关核心规范
+2. `.claude/agentflows/CLAUDE.md` 或 `.codex/agentflows/AGENTS.md` — 平台适配层
+3. `protocol/schemas/*.json` — 状态、事件、评审报告 schema
+
 ### 核心理念
 
 ```
@@ -65,8 +71,15 @@ agentFlow 提供两套实现：
 |---|---|---|
 | 目录 | `.claude/agentflows/` | `.codex/agentflows/` |
 | 编码工具 | Claude Code CLI | Codex CLI (ChatGPT) |
-| 主指令文件 | `CLAUDE.md` | `AGENTS.md` |
+| 平台适配文件 | `CLAUDE.md` | `AGENTS.md` |
 | 触发前缀 | `/agentflow` `/agentflow:plan` 等 | `/agentflow` `/agentflow:plan` 等 |
+
+两者共享：
+
+- `protocol/core-spec.md`
+- `protocol/schemas/state.schema.json`
+- `protocol/schemas/event.schema.json`
+- `protocol/schemas/review-report.schema.json`
 
 ### 2.2 Claude Code 版安装
 
@@ -377,19 +390,27 @@ git commit -m "feat: add user authentication"
 编排器自动执行：
 1. 读取 spec 文件路径，生成项目名（从目录名 + 时间戳）
 2. 创建目录结构
-3. 写入 `.claude/agentflows/state.md` 或 `.codex/agentflows/state.md`（phase=init）
+3. 写入 `.claude/agentflows/state.json` 或 `.codex/agentflows/state.json`（phase=init）
 4. 写入对应版本的 `_run/{name}/run-log.md` 首条
 5. 写入对应版本的 `_run/{name}/events.jsonl` 首条 `project_started` 事件
 6. 尝试启动仪表盘（失败不阻塞）
 
-**此时 state.md 的内容**：
+**此时 state.json 的核心字段**：
 
-```yaml
-phase: init
-spec_file: .codex/agentflows/specs/user-auth/feature-spec.md
-feature_name: user-auth
-output_dir: .codex/agentflows/specs/user-auth/
-run_dir: .codex/agentflows/_run/user-auth/
+```json
+{
+  "run": {
+    "phase": "init",
+    "mode": "full",
+    "current_task_id": null
+  },
+  "paths": {
+    "spec_file": ".codex/agentflows/specs/user-auth/feature-spec.md",
+    "feature_name": "user-auth",
+    "output_dir": ".codex/agentflows/specs/user-auth/",
+    "run_dir": ".codex/agentflows/_run/user-auth/"
+  }
+}
 ```
 
 ### 5.2 阶段 1：规划（5-15分钟）
@@ -580,36 +601,54 @@ Client → AuthController → AuthService → UserRepository → DB
 
 ### 6.3 评审报告结构
 
-```markdown
-# Implementation — Evaluation Report
+评审报告现在以 JSON 为准，Markdown 仅作人类阅读镜像。
 
-## Gates
-| Gate | Status |
-|------|--------|
-| Lint | ✅ 0 errors |
-| TypeCheck | ✅ 0 errors |
-| Test | ✅ 14 passed |
-| Plan Conformance | ✅ All steps implemented |
-| Security | ✅ No issues found |
+权威文件：
 
-## Findings
-### Strengths
-- Error handling covers all expected failure modes
-- Token expiration logic follows best practices
+- `.../_agent/review-reports/task01-review.json`
+- `.../_agent/review-reports/task02-review.json`
+- `.../_agent/review-reports/task03-review.json`
 
-### Issues
-(none — all gates passed)
-
-## Judgment
-PASS
-
-## Rationale
-All verification gates passed. Code follows the implementation plan exactly. Security review found no issues. Ready for delivery phase.
+```json
+{
+  "protocol_version": "1.0.0",
+  "task": {
+    "task_id": "task02",
+    "task_title": "Implementation",
+    "round": 1,
+    "evaluator_id": "agent-123"
+  },
+  "judgment": {
+    "status": "PASS",
+    "failure_class": null,
+    "continuation": "advance"
+  },
+  "gate_results": [
+    { "gate": "Lint", "status": "PASS", "command": "pnpm lint", "details": "0 errors" }
+  ],
+  "issues": [],
+  "strengths": [
+    "Error handling covers expected failure modes"
+  ],
+  "rationale": [
+    "All configured verification gates passed."
+  ]
+}
 ```
 
 如果看到 **FAIL**，会有具体的问题清单，格式如：
-```markdown
-- [ ] `src/services/auth.ts:L47` — 未检查邮箱是否已注册就创建新用户。Fix: 在 createUser 之前调用 findUserByEmail 检查
+```json
+{
+  "issue_id": "ISSUE-001",
+  "status": "open",
+  "severity": "medium",
+  "category": "quality",
+  "file": "src/services/auth.ts",
+  "line": 47,
+  "title": "Missing duplicate email check",
+  "description": "User creation does not verify whether the email is already registered.",
+  "fix": "Call findUserByEmail before createUser."
+}
 ```
 
 ---
@@ -884,7 +923,7 @@ git push -u origin feature/export
 **症状**：流水线因超时、网络错误或工具调用失败中断。
 
 **解决**：
-1. 读取 `.claude/agentflows/state.md` 或 `.codex/agentflows/state.md` 查看当前阶段
+1. 读取 `.claude/agentflows/state.json` 或 `.codex/agentflows/state.json` 查看当前阶段
 2. 读取对应版本的 `_run/{feature}/run-log.md` 查看最近完成的步骤
 3. 从下一个未完成的步骤继续。
 
@@ -894,7 +933,7 @@ git push -u origin feature/export
 |------|---------|
 | Agent 启动后 10 分钟无响应 | 从 progress-log 最后完成步骤恢复 |
 | lint/typecheck/test 报 exit 127 | 标记 SKIP (tool missing)，提示用户检查命令 |
-| state.md 格式损坏 | 从 events.jsonl 重建 |
+| state.json 格式损坏 | 从 events.jsonl 重建 |
 | 2 轮修复后仍 FAIL | 标记 UNRESOLVED，生成人工审查清单 |
 | spec 路径不存在 | 提示用户，建议 `/agentflow:spec` |
 | 下次启动提示未完成运行 | 选择恢复/放弃/查看日志 |
@@ -960,7 +999,7 @@ agents:
 如果你需要 4 个 task 而不是 3 个：
 
 1. 在 `CLAUDE.md`/`AGENTS.md` 的「开发流水线」章节添加 task04
-2. 在 `state.md` 的 tasks 中添加 task04 配置
+2. 在 `state.json` 的 `tasks` 中添加 task04 配置
 3. 在 output layout 中添加对应输出文件
 
 ### 12.4 添加新的 Agent 角色
@@ -982,7 +1021,7 @@ agents:
 | 仅规划 | `/agentflow:plan specs/x/feature-spec.md` | `/agentflow:plan specs/x/feature-spec.md` |
 | 从计划实现 | `/agentflow:build specs/x/implementation-plan.md` | `/agentflow:build specs/x/implementation-plan.md` |
 | 仅评审 | `/agentflow:review` | `/agentflow:review` |
-| 查看状态 | `cat .claude/agentflows/state.md` | `cat .codex/agentflows/state.md` |
+| 查看状态 | `cat .claude/agentflows/state.json` | `cat .codex/agentflows/state.json` |
 | 启动仪表盘 | `.claude/agentflows/tools/open-dashboard.sh` | `.codex/agentflows/tools/open-dashboard.sh` |
 | Agent 恢复机制 | Agent 工具 SendMessage | task conversation continuation |
 | 配置文件 | `.claude/agentflows/settings.json` | `.codex/agentflows/config.yaml` + `.codex/agentflows/hooks.json` |
@@ -1009,11 +1048,11 @@ agents:
 .claude/agentflows/specs/{feature}/ 或 .codex/agentflows/specs/{feature}/  ← 交付物（给你的）
 .../specs/{feature}/_agent/                                               ← Agent 内部（评审报告在这）
 .claude/agentflows/_run/{feature}/ 或 .codex/agentflows/_run/{feature}/   ← 运行时日志（调试用）
-.claude/agentflows/state.md 或 .codex/agentflows/state.md                 ← 当前状态（中断恢复用）
+.claude/agentflows/state.json 或 .codex/agentflows/state.json             ← 当前状态（中断恢复用）
 ```
 
 ### 发现问题时首先查看
 
 1. `_agent/review-reports/task02-review.md` — 代码评审结果
 2. 对应版本的 `_run/{feature}/run-log.md` — 运行日志
-3. 对应版本的 `state.md` — 当前状态
+3. 对应版本的 `state.json` — 当前状态

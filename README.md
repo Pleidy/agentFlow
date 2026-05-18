@@ -7,6 +7,20 @@ agentFlow 是一个**多 Agent 开发编排协议**。它定义了一套流水�
 
 ---
 
+## 协议结构
+
+agentFlow 现在分成三层：
+
+- `protocol/core-spec.md`：平台无关的核心规范，定义 MUST/SHOULD 规则、阶段、失败分类、gate 语义、repair loop 和模板边界
+- `protocol/schemas/*.json`：机器可验证的状态、事件、评审报告 schema
+- `.claude/agentflows/CLAUDE.md` 与 `.codex/agentflows/AGENTS.md`：平台适配层，只保留路径绑定、agent 生命周期和平台配置差异
+
+运行态以 JSON 文件为准：
+
+- `.claude/agentflows/state.json`
+- `.codex/agentflows/state.json`
+- `.../_agent/review-reports/taskXX-review.json`
+
 ## 核心设计
 
 | 原则 | 说明 |
@@ -76,10 +90,12 @@ agentFlow 是一个**多 Agent 开发编排协议**。它定义了一套流水�
 
 ```bash
 # Claude Code 项目
+cp -r protocol /path/to/your-project/
 cp -r .claude/agentflows /path/to/your-project/.claude/
 cp CLAUDE.md /path/to/your-project/
 
 # Codex 项目
+cp -r protocol /path/to/your-project/
 cp -r .codex/agentflows /path/to/your-project/.codex/
 ```
 
@@ -93,9 +109,12 @@ cp -r .codex/agentflows /path/to/your-project/.codex/
 
 ```
 ├── CLAUDE.md                      # 项目根引导文件
+├── protocol/                      # 平台无关核心规范与 schema
+│   ├── core-spec.md
+│   └── schemas/
 ├── .claude/agentflows/            # Claude Code 版协议
-│   ├── CLAUDE.md                   # 完整编排协议
-│   ├── state.md                    # 运行时状态机
+│   ├── CLAUDE.md                   # Claude 适配层
+│   ├── state.json                  # 运行时状态
 │   ├── settings.json               # 权限配置
 │   ├── agents/                     # Agent 角色定义
 │   ├── skills/                     # 开发技能
@@ -103,8 +122,8 @@ cp -r .codex/agentflows /path/to/your-project/.codex/
 │   ├── specs/                      # 需求规格
 │   └── _run/                       # 运行时日志
 ├── .codex/agentflows/             # Codex 版协议
-│   ├── AGENTS.md
-│   ├── state.md
+│   ├── AGENTS.md                   # Codex 适配层
+│   ├── state.json
 │   ├── config.yaml
 │   ├── hooks.json
 │   ├── agents/
@@ -124,8 +143,9 @@ cp -r .codex/agentflows /path/to/your-project/.codex/
 |------|------|
 | [使用指南](docs/agentflow-usage-guide.md) | 完整操作手册：安装、写 spec、触发流程、故障排除 |
 | [安装指南](docs/agentflow-install.md) | 2 步安装说明 |
-| [`.claude/agentflows/CLAUDE.md`](.claude/agentflows/CLAUDE.md) | Claude Code 版完整编排协议 |
-| [`.codex/agentflows/AGENTS.md`](.codex/agentflows/AGENTS.md) | Codex 版完整编排协议 |
+| [`protocol/core-spec.md`](protocol/core-spec.md) | 平台无关核心规范 |
+| [`.claude/agentflows/CLAUDE.md`](.claude/agentflows/CLAUDE.md) | Claude Code 适配层 |
+| [`.codex/agentflows/AGENTS.md`](.codex/agentflows/AGENTS.md) | Codex 适配层 |
 
 ---
 

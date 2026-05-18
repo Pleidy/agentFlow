@@ -2,15 +2,17 @@
 
 ## 安装（2 步）
 
-agentFlow 同时提供 Claude Code 版和 Codex 版模板。安装时复制你需要的那一套即可。
+agentFlow 同时提供 Claude Code 版和 Codex 版模板。安装时复制你需要的那一套即可。两套平台模板共同继承仓库中的 `protocol/core-spec.md` 和 `protocol/schemas/*.json`。
 
 ### 步骤 1：复制协议目录
 
 ```bash
 # Claude Code 项目
+cp -r /path/to/agentflow/protocol .
 cp -r /path/to/agentflow/.claude/agentflows .claude/
 
 # Codex 项目
+cp -r /path/to/agentflow/protocol .
 cp -r /path/to/agentflow/.codex/agentflows .codex/
 ```
 
@@ -38,7 +40,7 @@ cat > CLAUDE.md << 'EOF'
 
 ## 执行规则
 
-1. 收到 `/agentflow` 指令后，**完整读取** `.claude/agentflows/CLAUDE.md` 获取编排协议
+1. 收到 `/agentflow` 指令后，**先读取** `protocol/core-spec.md`，再读取 `.claude/agentflows/CLAUDE.md`
 2. 严格按照协议中的状态机、handoff 模板、门禁规则执行
 3. 编排器只编排不生产 — 所有代码变更通过子 Agent 完成
 4. Agent 启动方式：使用 `Agent` 工具，`subagent_type: "general-purpose"`，prompt = 角色定义（`.claude/agentflows/agents/*.md`）+ handoff 模板
@@ -73,10 +75,13 @@ EOF
 ```
 your-project/
 ├── CLAUDE.md                 # ← 引导文件（步骤 2 创建）
+├── protocol/
+│   ├── core-spec.md
+│   └── schemas/
 ├── .claude/
 │   └── agentflows/           # ← 协议目录（步骤 1 复制）
-│       ├── CLAUDE.md          # 完整编排协议
-│       ├── state.md           # 运行时状态
+│       ├── CLAUDE.md          # Claude 适配层
+│       ├── state.json         # 运行时状态
 │       ├── settings.json      # 权限配置
 │       ├── agents/            # 角色定义（prompt 模板）
 │       ├── skills/            # 可选技能
@@ -85,10 +90,10 @@ your-project/
 │       └── _run/              # 运行时日志
 ├── .codex/
 │   └── agentflows/
-│       ├── AGENTS.md
+│       ├── AGENTS.md          # Codex 适配层
 │       ├── config.yaml        # 需要按项目修改命令
 │       ├── hooks.json         # 可选，默认为空 hooks
-│       ├── state.md
+│       ├── state.json
 │       ├── agents/
 │       ├── tools/
 │       ├── specs/
@@ -109,4 +114,4 @@ your-project/
 
 ## 为什么需要根目录 CLAUDE.md
 
-Claude Code 启动时只读取项目根目录的 `CLAUDE.md`，不会自动扫描 `.claude/` 子目录。根目录文件作为"引导线"，告诉 Claude Code `/agentflow` 命令存在，并指向 `.claude/agentflows/CLAUDE.md` 获取完整的编排协议。完整协议和所有 Agent 定义仍然集中在 `.claude/agentflows/` 下，保持项目目录干净。
+Claude Code 启动时只读取项目根目录的 `CLAUDE.md`，不会自动扫描 `.claude/` 子目录。根目录文件作为“引导线”，告诉 Claude Code `/agentflow` 命令存在，并指向 `protocol/core-spec.md` + `.claude/agentflows/CLAUDE.md` 获取完整协议。核心规则集中在 `protocol/`，平台差异集中在 `.claude/agentflows/` 下。

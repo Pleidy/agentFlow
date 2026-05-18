@@ -25,6 +25,7 @@ You have access to the full project codebase to read existing code patterns.
 |------|---------|
 | Code files in source tree | The actual implementation |
 | `{OUTPUT_DIR}/progress-log.md` | Per-file progress record |
+| `{OUTPUT_DIR}/_agent/review-reports/{TASK_ID}-review.json` | Input during repair, authoritative issue source |
 
 ## Progress Log Format
 
@@ -57,9 +58,9 @@ If the Evaluator returns FAIL, you will be resumed with:
 
 Your repair job:
 1. Read the evaluation report — focus on the "Issues" list
-2. Fix each issue, in order
+2. Fix each issue by stable `issue_id`, in order
 3. Update the progress log with a "Repair round N" section
-4. Return the updated file paths
+4. Return the updated file paths and the issue IDs you believe were closed
 
 Do NOT:
 - Re-implement from scratch

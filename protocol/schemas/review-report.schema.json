@@ -1,0 +1,165 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://agentflow.local/protocol/schemas/review-report.schema.json",
+  "title": "agentFlow review report",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "protocol_version",
+    "task",
+    "judgment",
+    "gate_results",
+    "issues",
+    "strengths",
+    "rationale"
+  ],
+  "properties": {
+    "protocol_version": {
+      "type": "string"
+    },
+    "task": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["task_id", "task_title", "round", "evaluator_id"],
+      "properties": {
+        "task_id": {
+          "type": "string",
+          "enum": ["task01", "task02", "task03", "mod"]
+        },
+        "task_title": {
+          "type": "string"
+        },
+        "round": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "evaluator_id": {
+          "type": ["string", "null"]
+        }
+      }
+    },
+    "judgment": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status", "failure_class", "continuation"],
+      "properties": {
+        "status": {
+          "type": "string",
+          "enum": ["PASS", "FAIL", "UNRESOLVED"]
+        },
+        "failure_class": {
+          "type": ["string", "null"],
+          "enum": [
+            null,
+            "PLAN_INVALID",
+            "BUILD_FAILED",
+            "GATE_FAILED",
+            "EVALUATION_FAILED",
+            "RECOVERY_FAILED",
+            "UNRESOLVED_AFTER_MAX_REPAIRS"
+          ]
+        },
+        "continuation": {
+          "type": "string",
+          "enum": ["advance", "repair", "halt"]
+        }
+      }
+    },
+    "gate_results": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["gate", "status", "details"],
+        "properties": {
+          "gate": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "PASS",
+              "FAIL",
+              "SKIP_NOT_CONFIGURED",
+              "SKIP_TOOL_MISSING",
+              "SKIP_NOT_APPLICABLE"
+            ]
+          },
+          "command": {
+            "type": ["string", "null"]
+          },
+          "details": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "issues": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "issue_id",
+          "status",
+          "severity",
+          "category",
+          "title",
+          "description",
+          "fix"
+        ],
+        "properties": {
+          "issue_id": {
+            "type": "string",
+            "pattern": "^ISSUE-[0-9]{3}$"
+          },
+          "status": {
+            "type": "string",
+            "enum": ["open", "closed", "carried_forward", "new"]
+          },
+          "severity": {
+            "type": "string",
+            "enum": ["high", "medium", "low"]
+          },
+          "category": {
+            "type": "string",
+            "enum": [
+              "plan_conformance",
+              "lint",
+              "typecheck",
+              "test",
+              "security",
+              "quality",
+              "runtime"
+            ]
+          },
+          "file": {
+            "type": ["string", "null"]
+          },
+          "line": {
+            "type": ["integer", "null"],
+            "minimum": 1
+          },
+          "title": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "fix": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "strengths": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "rationale": {
+      "type": "array",
+      "items": { "type": "string" },
+      "minItems": 1
+    }
+  }
+}
