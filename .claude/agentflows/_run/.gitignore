@@ -1,0 +1,4 @@
+# Keep lessons.md (cross-session memory), ignore all other runtime output
+*
+!.gitignore
+!lessons.md
