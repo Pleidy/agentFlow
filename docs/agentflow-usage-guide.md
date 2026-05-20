@@ -368,12 +368,13 @@ git commit -m "feat: add user authentication"
 ### 5.1 阶段 0：初始化（30秒内完成）
 
 编排器自动执行：
-1. 读取 spec 文件路径，生成项目名（从目录名 + 时间戳）
+1. 读取 spec 文件路径，生成项目名（从目录名提取）
 2. 创建目录结构
 3. 写入 `state.md`（phase=init）
 4. 写入 `_run/{name}/run-log.md` 首条
 5. 写入 `_run/{name}/events.jsonl` 首条 `project_started` 事件
-6. 尝试启动仪表盘（失败不阻塞）
+6. 加载 `_run/lessons.md` 跨会话记忆（按 task 类型过滤最近 5 条，≤500 tokens）
+7. 尝试启动仪表盘（失败不阻塞）
 
 **此时 state.md 的内容**：
 

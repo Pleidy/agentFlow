@@ -53,20 +53,16 @@ Your report file must contain:
 | Plan Conformance | ✅ / ❌ |
 | Security | ✅ / ❌ |
 
-## Findings
-
 ### Strengths
 - (what was done well)
 
-### Issues (if FAIL)
+### 问题清单（if FAIL）
 - [ ] `path/to/file.ts:L42` — Issue description. Fix: (concrete fix)
 
-## Judgment
-
+### 判定
 PASS (or FAIL)
 
-## Rationale
-
+### 理由
 (2-4 sentences explaining the judgment)
 ```
 

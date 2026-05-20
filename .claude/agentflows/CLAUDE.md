@@ -43,6 +43,7 @@ agentFlow 是**开发 harness**，不绑定任何特定语言、框架或业务�
 | `/agentflow:build <plan-path>` | 从计划构建 | 读取计划，逐文件实现 |
 | `/agentflow:review` | 仅评审 | 对当前变更运行完整门禁 |
 | `/agentflow:mod [description\|--full]` | 轻量修改 | 澄清需求 → 实现 → 门禁，跳过 spec/plan |
+| `/agentflow help` | 帮助 | 列出所有可用命令及用途 |
 
 **关键原则**：触发后编排器不得直接回答开发问题，必须路由到流水线。
 
@@ -61,7 +62,7 @@ agentFlow 是**开发 harness**，不绑定任何特定语言、框架或业务�
 | `RUN_DIR` | `.claude/agentflows/_run/{FEATURE_NAME}/` | `.claude/agentflows/_run/user-auth/` |
 | `DASHBOARD_URL` | 仪表盘地址 | `file://.claude/agentflows/tools/harness-dashboard.html` |
 
-`FEATURE_NAME` 从 spec 目录名提取，附加时间戳：`{feature-slug}-{MMDD-HHMM}`。
+`FEATURE_NAME` 从 spec 目录名提取（如 `user-auth`）。
 
 ---
 
@@ -452,6 +453,17 @@ Constraints:
 
 **关键**：role prompt（agents/*.md）在前，task handoff 在后，确保 Agent 先理解角色约束再接收具体任务。
 
+### 技能加载
+
+`/agentflow:spec` 和 `/agentflow:mod` 不通过 Agent 工具启动，而是由编排器直接加载对应技能文件执行：
+
+| 命令 | 加载的技能文件 |
+|------|---------------|
+| `/agentflow:spec [idea\|path]` | `.claude/agentflows/skills/write-spec/SKILL.md` |
+| `/agentflow:mod [desc\|--full]` | `.claude/agentflows/skills/modify-feature/SKILL.md` |
+
+流程类命令（`:plan` `:build` `:review`）使用 Agent 工具 + agents/*.md 角色文件。
+
 ### 恢复实例
 
 如果 task 评估为 FAIL，使用 Agent 工具的 SendMessage 恢复同一个实例：
@@ -537,9 +549,11 @@ instances:
 │   ├── implementation-builder.md
 │   └── quality-evaluator.md
 ├── skills/                        # 开发技能定义
-│   ├── plan-feature/SKILL.md
-│   ├── implement-plan/SKILL.md
-│   └── review-implementation/SKILL.md
+│   ├── write-spec/SKILL.md         # /agentflow:spec
+│   ├── modify-feature/SKILL.md     # /agentflow:mod
+│   ├── plan-feature/SKILL.md       # /agentflow:plan
+│   ├── implement-plan/SKILL.md     # /agentflow:build
+│   └── review-implementation/SKILL.md  # /agentflow:review
 ├── tools/                         # 仪表盘与脚本
 │   ├── harness-dashboard.html
 │   └── open-dashboard.sh

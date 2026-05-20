@@ -13,6 +13,7 @@
 | `/agentflow:plan <spec>` | 仅规划：产出架构设计与实现计划 |
 | `/agentflow:build <plan>` | 仅实现：按计划编码 |
 | `/agentflow:review` | 仅评审：对当前变更运行门禁 |
+| `/agentflow help` | 列出所有可用命令 |
 
 ## 执行规则
 

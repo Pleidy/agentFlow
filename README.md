@@ -43,6 +43,7 @@ agentFlow 是一个**多 Agent 开发编排协议**。它定义了一套流水�
 | `/agentflow` | 全流程：自动查找最近 spec，确认后 规划 → 实现 → 交付 |
 | `/agentflow <spec>` | 全流程：使用指定 spec 路径 |
 | `/agentflow:spec [想法\|路径]` | 剥洋葱式构建 spec，或审阅改进已有 spec |
+| `/agentflow:mod [描述\|--full]` | 轻量修改：澄清需求后改代码 + 门禁，无需 spec/plan |
 | `/agentflow:plan <spec>` | 仅规划：产出架构设计与实现计划 |
 | `/agentflow:build <plan>` | 仅实现：按计划编码 |
 | `/agentflow:review` | 仅评审：对当前变更运行门禁 |

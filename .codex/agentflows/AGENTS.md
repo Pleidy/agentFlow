@@ -43,6 +43,7 @@ agentFlow 是**开发 harness**，不绑定任何特定语言、框架或业务�
 | `/agentflow:build <plan-path>` | 从计划构建 | 读取计划，逐文件实现 |
 | `/agentflow:review` | 仅评审 | 对当前变更运行完整门禁 |
 | `/agentflow:mod [description\|--full]` | 轻量修改 | 澄清需求 → 实现 → 门禁，跳过 spec/plan |
+| `/agentflow help` | 帮助 | 列出所有可用命令及用途 |
 
 **关键原则**：触发后编排器不得直接回答开发问题，必须路由到流水线。
 
@@ -61,7 +62,7 @@ agentFlow 是**开发 harness**，不绑定任何特定语言、框架或业务�
 | `RUN_DIR` | `.codex/agentflows/_run/{FEATURE_NAME}/` | `.codex/agentflows/_run/user-auth/` |
 | `DASHBOARD_URL` | 仪表盘地址 | `file://.codex/agentflows/tools/harness-dashboard.html` |
 
-`FEATURE_NAME` 从 spec 目录名提取，附加时间戳：`{feature-slug}-{MMDD-HHMM}`。
+`FEATURE_NAME` 从 spec 目录名提取（如 `user-auth`）。
 
 ---
 
@@ -84,7 +85,7 @@ agentFlow 是**开发 harness**，不绑定任何特定语言、框架或业务�
 4. 写入 `state.md`（初始状态，phase=init）
 5. 写入 `{RUN_DIR}/run-log.md` 首条记录
 6. 追加 `{RUN_DIR}/events.jsonl` 首条 `project_started` 事件
-7. **加载跨会话记忆**：读取 `.codex/agentflows/_run/lessons.md`（如不存在则跳过）。按 task 类型过滤，取最近 5 条，注入 Agent handoff
+7. **加载跨会话记忆**：读取 `.codex/agentflows/_run/lessons.md`（如不存在则跳过）。按 task 类型过滤，取最近 5 条，≤500 tokens，注入 Agent handoff
 8. 启动仪表盘（非阻塞，失败不中断）
 
 ### 阶段 1：规划（task01 — Architecture & Design）
@@ -116,6 +117,12 @@ agentFlow 是**开发 harness**，不绑定任何特定语言、框架或业务�
 
 **验证门禁（按顺序）**：Lint → TypeCheck → Test → AI Review
 
+**Evaluator 评审维度**：
+1. 代码是否严格按计划实现（无遗漏、无额外改动）
+2. 是否引入安全漏洞或不良实践
+3. 命名、结构、错误处理是否合理
+4. 是否有明显的边界条件遗漏
+
 **判定**：PASS → 进入阶段 3 / FAIL → 回到 Builder 修复（最多 2 轮，恢复同一 Builder 实例）
 
 ### 阶段 3：交付（task03 — Verification & Delivery）
@@ -123,6 +130,11 @@ agentFlow 是**开发 harness**，不绑定任何特定语言、框架或业务�
 **目标**：验证完整性并产出可交付的 PR。
 
 **Builder 产出**：`{OUTPUT_DIR}/test-report.md` + `{OUTPUT_DIR}/pr-document.md`
+
+**Evaluator 评审维度**：
+1. 测试报告是否真实（不是粘贴模板）
+2. PR 文档是否包含必要信息（what/why/how/test/rollback）
+3. 整体变更是否符合设计合约的验收标准
 
 **完成条件**：阶段 3 PASS → 编排器汇总结果，报告完成。
 
@@ -226,7 +238,9 @@ Codex 使用 `.codex/agentflows/agents/` 目录定义 Agent 角色：
 .codex/agentflows/agents/
 ├── feature-planner.md
 ├── implementation-builder.md
-└── quality-evaluator.md
+├── quality-evaluator.md
+├── spec-writer.md
+└── mod-builder.md
 ```
 
 启动 Agent 时，Codex 加载对应文件作为 Agent 系统 prompt。
