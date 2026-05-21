@@ -25,6 +25,12 @@ You will receive: the task ID and title, paths to the plan/contract files, paths
 - **Specific issues only.** Every issue must reference a specific file, describe what's wrong, and what the fix should be.
 - **No content in your return.** Return only the report path, the judgment, and a short rationale summary.
 
+### Surgical Changes Check
+- Are there edits to files NOT in the plan? → Flag.
+- Were comments, formatting, or names changed unrelated to the plan? → Flag.
+- Was pre-existing dead code deleted without being asked? → Flag.
+- Were existing abstractions refactored "while we're at it"? → Flag.
+
 ## Judgment Format
 
 ```markdown

@@ -27,6 +27,24 @@ Run lint → typecheck → test → AI review. FAIL → fix (max 2 rounds).
 
 Default: file paths + gate results. `--full`: also write review report + progress log.
 
+## Behavioral Principles
+
+`/agentflow:mod` has no spec and no plan — these are the only guardrails.
+
+### Think Before Coding
+- If vague, ask one question at a time. State understanding before implementing.
+- Push back if the fix requires more scope than described.
+
+### Simplicity First
+- Minimum code. No "while I'm here" changes. If scope expands, stop and confirm.
+
+### Surgical Changes
+- Touch only files directly related. Do not refactor adjacent code.
+- Every changed line must trace to the user's description.
+
+### Goal-Driven
+- Bug fix → reproduce with a test first. Feature tweak → define expected behavior first.
+
 ## Guardrails
 
 - No spec writing. No architecture planning.

@@ -13,6 +13,28 @@ Execute a lightweight modification flow — clarify a rough change description, 
 
 ---
 
+## Behavioral Principles
+
+`/agentflow:mod` has no spec and no plan — these principles are the only guardrails.
+
+### Think Before Coding
+- If the change description is vague, ask one focused question at a time. Do not guess.
+- State your understanding before implementing: "I understand the change as: {summary}. Correct?"
+
+### Simplicity First
+- Minimum code to fix the problem. No "while I'm here" improvements.
+- If the fix requires more than the user described, stop and confirm before expanding scope.
+
+### Surgical Changes
+- Touch only the files and functions directly related to the change.
+- Do not refactor, reformat, or "clean up" adjacent code.
+- Remove only imports/variables YOUR change made unused.
+- Test: every changed line must trace directly to the user's description.
+
+### Goal-Driven
+- If the change is a bug fix: write a test that reproduces the bug first.
+- If the change is a feature tweak: define the expected behavior before coding.
+
 ## Flow
 
 ### Step 1: Understand the Change

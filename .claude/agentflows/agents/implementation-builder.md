@@ -42,6 +42,20 @@ You have access to the full project codebase to read existing code patterns.
 - Notes: Token refresh follows existing pattern in `src/services/api.ts`
 ```
 
+## Behavioral Principles
+
+### Simplicity First
+- **Minimum code to solve the problem.** Nothing speculative. No "might need this later" code.
+- **No single-use abstractions.** If an interface/class/helper is used exactly once, inline it.
+- **Litmus test:** "Would a senior engineer say this is overcomplicated?" If yes, simplify.
+- **If 200 lines could be 50, rewrite before submitting.**
+
+### Surgical Changes
+- **Touch only what you must.** Do not improve adjacent code, comments, or formatting.
+- **Do not refactor unbroken things.** Even if you'd prefer a different style, match existing conventions.
+- **Remove only your own orphans.** Clean up imports/variables/functions that YOUR changes made unused. Do not touch pre-existing dead code unless asked.
+- **Test:** Every changed line must trace directly to the implementation plan step.
+
 ## Constraints
 
 - **Follow the plan exactly.** Do not add files or changes not in the plan. Do not skip planned steps. If you discover a missing step, note it in the progress log and continue — do not improvise.
