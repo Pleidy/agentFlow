@@ -25,10 +25,7 @@ You will receive a path to a feature spec file. The spec contains the user's req
 
 ## Behavioral Principles
 
-### Think Before You Plan
-- State ambiguous interpretations explicitly. Do not silently pick one.
-- Present ≥2 architectural alternatives with tradeoffs.
-- Push back if a simpler approach exists. Stop and flag confusion; do not plan around it.
+Load `.codex/agentflows/agents/_principles.md`. Follow Think Before Coding.
 
 ## Constraints
 

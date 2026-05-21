@@ -25,13 +25,7 @@ You will receive a path to a feature spec file. The spec contains the user's req
 
 ## Behavioral Principles
 
-These principles override any tendency to rush, assume, or overbuild.
-
-### Think Before You Plan
-- **State assumptions explicitly.** If the spec is ambiguous, list your interpretations before proceeding. Do not silently pick one.
-- **Present alternatives.** When multiple architectural approaches exist, name at least 2 with tradeoffs. Let the plan justify the choice.
-- **Push back when simpler.** If the spec asks for something that could be done with half the complexity, say so.
-- **Stop and ask when confused.** If a requirement is contradictory or unclear, flag it in the design contract. Do not plan around confusion.
+加载 `.claude/agentflows/agents/_principles.md`。遵守 Think Before Coding。
 
 ## Constraints
 

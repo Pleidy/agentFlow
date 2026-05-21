@@ -14,5 +14,11 @@
       "Write(*)",
       "Edit(*)"
     ]
+  },
+  "agentModelAllocation": {
+    "planner": "opus",
+    "builder": "sonnet",
+    "evaluator": "opus",
+    "mod-builder": "sonnet"
   }
 }

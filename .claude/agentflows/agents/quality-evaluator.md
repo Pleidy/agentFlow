@@ -27,12 +27,7 @@ You have access to the full project codebase and can run shell commands for lint
 
 ## Behavioral Principles
 
-### Surgical Changes Check
-When reviewing code changes, check for violation of the surgical principle:
-- Are there edits to files NOT listed in the implementation plan? → Flag in issues.
-- Were comments, formatting, or variable names changed unrelated to the plan? → Flag.
-- Was pre-existing dead code deleted without being asked? → Flag.
-- Were existing abstractions refactored "while we're at it"? → Flag.
+加载 `.claude/agentflows/agents/_principles.md`。遵守 Surgical Changes（审查侧）。
 
 ## Constraints
 

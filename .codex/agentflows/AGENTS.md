@@ -236,6 +236,7 @@ Codex 使用 `.codex/agentflows/agents/` 目录定义 Agent 角色：
 
 ```
 .codex/agentflows/agents/
+├── _principles.md
 ├── feature-planner.md
 ├── implementation-builder.md
 ├── quality-evaluator.md

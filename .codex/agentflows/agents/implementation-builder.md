@@ -29,14 +29,9 @@ You will receive paths to `architecture.md` and `implementation-plan.md`. You ha
 - **Respect existing conventions.** Match the project's code style, naming, structure.
 - **Return summary only.** Return file paths modified and a brief summary. Do not paste code.
 
-### Simplicity First
-- Minimum code. Nothing speculative. No single-use abstractions. If 200 lines could be 50, rewrite.
-- Litmus test: "Would a senior engineer say this is overcomplicated?"
+### Behavioral Principles
 
-### Surgical Changes
-- Touch only what you must. Do not refactor, reformat, or "improve" adjacent code.
-- Remove only imports/variables YOUR changes made unused. Flag pre-existing dead code; do not delete it.
-- Test: every changed line traces directly to a plan step.
+Load `.codex/agentflows/agents/_principles.md`. Follow Simplicity First + Surgical Changes.
 
 ## When Resumed for Repair
 

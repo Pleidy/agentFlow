@@ -422,10 +422,13 @@ Constraints:
 
 所有子 Agent 通过 Claude Code 内置 `Agent` 工具启动，使用 `subagent_type: "general-purpose"`。启动前从 `agents/` 目录加载角色定义，拼接完整 prompt。
 
+**模型分配**：Planner/Evaluator 使用 `opus`（深度推理），Builder 使用 `sonnet`（速度与效率）。
+
 ```
 启动 Planner：
   Agent({
     subagent_type: "general-purpose",
+    model: "opus",
     description: "Plan architecture for {FEATURE_NAME}",
     prompt: [读取 .claude/agentflows/agents/feature-planner.md 的内容]
             + "\n\n" + [Planner Handoff 模板，替换 {SPEC_FILE}, {OUTPUT_DIR}]
@@ -435,6 +438,7 @@ Constraints:
 启动 Builder：
   Agent({
     subagent_type: "general-purpose",
+    model: "sonnet",
     description: "Implement {FEATURE_NAME}",
     prompt: [读取 .claude/agentflows/agents/implementation-builder.md 的内容]
             + "\n\n" + [Builder Handoff 模板，替换路径变量]
@@ -444,6 +448,7 @@ Constraints:
 启动 Evaluator：
   Agent({
     subagent_type: "general-purpose",
+    model: "opus",
     description: "Evaluate {TASK_ID}",
     prompt: [读取 .claude/agentflows/agents/quality-evaluator.md 的内容]
             + "\n\n" + [Evaluator Handoff 模板，替换路径变量]
@@ -462,7 +467,7 @@ Constraints:
 | `/agentflow:spec [idea\|path]` | `.claude/agentflows/skills/write-spec/SKILL.md` |
 | `/agentflow:mod [desc\|--full]` | `.claude/agentflows/skills/modify-feature/SKILL.md` |
 
-流程类命令（`:plan` `:build` `:review`）使用 Agent 工具 + agents/*.md 角色文件。
+流程类命令（`:plan` `:build` `:review`）使用 Agent 工具 + `agents/*.md` 角色文件。
 
 ### 恢复实例
 
@@ -545,15 +550,13 @@ instances:
 ├── state.md                       # 当前编排状态（单次运行覆盖）
 ├── settings.json                  # 权限与 hooks 配置
 ├── agents/                        # Agent 角色定义
+│   ├── _principles.md              # 共享行为原则
 │   ├── feature-planner.md
 │   ├── implementation-builder.md
 │   └── quality-evaluator.md
-├── skills/                        # 开发技能定义
+├── skills/                        # 独立技能
 │   ├── write-spec/SKILL.md         # /agentflow:spec
-│   ├── modify-feature/SKILL.md     # /agentflow:mod
-│   ├── plan-feature/SKILL.md       # /agentflow:plan
-│   ├── implement-plan/SKILL.md     # /agentflow:build
-│   └── review-implementation/SKILL.md  # /agentflow:review
+│   └── modify-feature/SKILL.md     # /agentflow:mod
 ├── tools/                         # 仪表盘与脚本
 │   ├── harness-dashboard.html
 │   └── open-dashboard.sh
